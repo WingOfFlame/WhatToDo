@@ -3,11 +3,13 @@ package com.justinhu.whattodo;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -15,9 +17,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RatingBar;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -34,8 +39,13 @@ import java.util.Locale;
 public class NewTaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
 
     private EditText taskname;
-    private TextView deadline;
     private ImageButton categoryButton;
+    private RatingBar priority;
+
+    private Switch trackableSwitch;
+    private View trackableOptions;
+    private EditText repetition;
+    private TextView deadline;
     private DatePickerDialog deadlinePicker;
     private SimpleDateFormat dateFormatter;
 
@@ -46,13 +56,40 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.dialog_newtask, container, false);
+        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+        toolbar.setTitle("New Task");
 
-        dateFormatter = new SimpleDateFormat("E, MMM dd, yyyy", Locale.US);
+        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+
+        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setHomeButtonEnabled(true);
+            actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
+        }
+        setHasOptionsMenu(true);
 
         taskname = (EditText) rootView.findViewById(R.id.taskname);
+        priority = (RatingBar) rootView.findViewById(R.id.priority);
+
+        trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
+        trackableOptions = (View) rootView.findViewById(R.id.option);
+        trackableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked){
+                    trackableOptions.setVisibility(View.VISIBLE);
+                }else{
+                    trackableOptions.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        repetition = (EditText)  rootView.findViewById(R.id.repetition);
         deadline = (TextView) rootView.findViewById(R.id.deadline);
         categoryButton = (ImageButton) rootView.findViewById(R.id.taskCategory);
 
+        dateFormatter = new SimpleDateFormat("E, MMM dd, yyyy", Locale.US);
         deadline.setOnClickListener(this);
         categoryButton.setOnClickListener(this);
 
@@ -71,18 +108,7 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
 
 
-        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
-        toolbar.setTitle("Dialog title");
 
-        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-
-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setHomeButtonEnabled(true);
-            actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
-        }
-        setHasOptionsMenu(true);
         return rootView;
     }
 
@@ -121,9 +147,16 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-
         if (id == R.id.action_save) {
-            // handle confirmation button click here
+            TaskContract newTask = new TaskContract(
+                    taskname.getText().toString(),
+                    taskCategory,
+                    (int)priority.getRating(),
+                    trackableSwitch.isChecked(),
+                    Integer.parseInt(repetition.getText().toString()),
+                    deadline.getText().toString()
+            );
+            dismiss();
             return true;
         } else if (id == android.R.id.home) {
             // handle close button click here

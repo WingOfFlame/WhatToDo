@@ -57,6 +57,8 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        }else if(id == R.id.action_save){
+            return false;
         }
 
         return super.onOptionsItemSelected(item);
