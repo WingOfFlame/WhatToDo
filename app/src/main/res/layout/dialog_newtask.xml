@@ -71,7 +71,8 @@
                 android:id="@+id/taskCategory"
                 android:background="@drawable/ic_assignment_grey_500_24dp"
                 android:layout_gravity="center"
-                android:layout_margin="8dp" />
+                android:layout_margin="8dp"
+                android:padding="8dp" />
 
 
         </LinearLayout>

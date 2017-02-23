@@ -17,7 +17,8 @@
             android:drawableTop="@drawable/ic_assignment_grey_500_24dp"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="8dp" />
 
         <Button
             android:text="Work"
@@ -27,7 +28,8 @@
             android:drawableTop="@drawable/ic_work_red_500_24dp"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="8dp" />
 
         <Button
             android:text="School"
@@ -37,7 +39,8 @@
             android:drawableTop="@drawable/ic_school_orange_500_24dp"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="8dp" />
     </LinearLayout>
 
     <LinearLayout
@@ -46,14 +49,15 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:text="Exercises"
+            android:text="Exercise"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/button_execises"
+            android:id="@+id/button_exercise"
             android:drawableTop="@drawable/ic_fitness_center_teal_500_24dp"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="8dp" />
 
         <Button
             android:text="Personal"
@@ -63,7 +67,8 @@
             android:drawableTop="@drawable/ic_person_green_500_24dp"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="8dp" />
 
         <Button
             android:text="Relax"
@@ -73,7 +78,8 @@
             android:drawableTop="@drawable/ic_music_note_light_green_500_24dp"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:layout_margin="8dp" />
     </LinearLayout>
 
 </LinearLayout>

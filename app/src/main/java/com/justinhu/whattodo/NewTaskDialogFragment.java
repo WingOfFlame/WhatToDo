@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -29,15 +28,18 @@ import java.util.Locale;
  * Created by justinhu on 2017-02-21.
  *
  * Thanks to JerabekJakub https://stackoverflow.com/questions/31606871/how-to-achieve-a-full-screen-dialog-as-described-in-material-guidelines/38070414#38070414
+ *  http://androidopentutorials.com/android-datepickerdialog-on-edittext-click-event/
  */
 
-public class NewTaskDialogFragment extends DialogFragment implements View.OnClickListener{
+public class NewTaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
 
     private EditText taskname;
     private TextView deadline;
-    private ImageButton category;
+    private ImageButton categoryButton;
     private DatePickerDialog deadlinePicker;
     private SimpleDateFormat dateFormatter;
+
+    private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
     /** The system calls this to get the DialogFragment's layout, regardless
      of whether it's being displayed as a dialog or an embedded fragment. */
     @Override
@@ -49,10 +51,10 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
 
         taskname = (EditText) rootView.findViewById(R.id.taskname);
         deadline = (TextView) rootView.findViewById(R.id.deadline);
-        category = (ImageButton) rootView.findViewById(R.id.taskCategory);
+        categoryButton = (ImageButton) rootView.findViewById(R.id.taskCategory);
 
         deadline.setOnClickListener(this);
-        category.setOnClickListener(this);
+        categoryButton.setOnClickListener(this);
 
         Calendar newCalendar = Calendar.getInstance();
         deadline.setText(dateFormatter.format(newCalendar.getTime()));
@@ -136,9 +138,38 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     public void onClick(View v) {
         if(v == deadline) {
             deadlinePicker.show();
-        }else if(v == category){
+        }else if(v == categoryButton){
             DialogFragment dialog = new TaskCategoryDialogFragment();
+            dialog.setTargetFragment(NewTaskDialogFragment.this,0);
             dialog.show(getFragmentManager(), "TaskCategoryDialogFragment");
+        }
+    }
+
+    @Override
+    public void onTaskCategoryClick(TaskCategoryEnum category) {
+        taskCategory = category;
+        switch (taskCategory){
+            case DEFAULT:
+                categoryButton.setBackgroundResource(R.drawable.ic_assignment_grey_500_24dp);
+                break;
+            case WORK:
+                categoryButton.setBackgroundResource(R.drawable.ic_work_red_500_24dp);
+                break;
+            case SCHOOL:
+                categoryButton.setBackgroundResource(R.drawable.ic_school_orange_500_24dp);
+                break;
+            case EXERCISE:
+                categoryButton.setBackgroundResource(R.drawable.ic_fitness_center_teal_500_24dp);
+                break;
+            case PERSONAL:
+                categoryButton.setBackgroundResource(R.drawable.ic_person_green_500_24dp);
+                break;
+            case RELAX:
+                categoryButton.setBackgroundResource(R.drawable.ic_music_note_light_green_500_24dp);
+                break;
+            default:
+                categoryButton.setBackgroundResource(R.drawable.ic_assignment_grey_500_24dp);
+                break;
         }
     }
 }
