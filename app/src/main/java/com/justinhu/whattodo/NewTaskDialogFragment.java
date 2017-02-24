@@ -1,7 +1,9 @@
 package com.justinhu.whattodo;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
@@ -50,6 +52,11 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     private SimpleDateFormat dateFormatter;
 
     private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
+    private NewTaskDialogListener listener;
+
+    public interface NewTaskDialogListener {
+        public void onTaskSaveClick(TaskContract newTask);
+    }
     /** The system calls this to get the DialogFragment's layout, regardless
      of whether it's being displayed as a dialog or an embedded fragment. */
     @Override
@@ -156,6 +163,7 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
                     Integer.parseInt(repetition.getText().toString()),
                     deadline.getText().toString()
             );
+            listener.onTaskSaveClick(newTask);
             dismiss();
             return true;
         } else if (id == android.R.id.home) {
@@ -204,5 +212,26 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
                 categoryButton.setBackgroundResource(R.drawable.ic_assignment_grey_500_24dp);
                 break;
         }
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        // Verify that the host activity implements the callback interface
+        try {
+            // Instantiate the NoticeDialogListener so we can send events to the host
+            listener = (NewTaskDialogListener) context;
+        } catch (ClassCastException e) {
+            // The activity doesn't implement the interface, throw exception
+            throw new ClassCastException(context.toString()
+                    + " must implement NewTaskDialogListener");
+        }
+    }
+
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        listener = null;
     }
 }
