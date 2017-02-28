@@ -70,7 +70,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:layout_margin="8dp"
-                android:background="@drawable/ic_assignment_grey_500_24dp"
+                android:background="@drawable/ic_default_grey_500_24dp"
                 android:padding="8dp"
                 android:contentDescription="Task Category" />
 
@@ -137,7 +137,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/option"
-            android:visibility="visible">
+            android:visibility="gone">
 
             <LinearLayout
                 android:orientation="horizontal"

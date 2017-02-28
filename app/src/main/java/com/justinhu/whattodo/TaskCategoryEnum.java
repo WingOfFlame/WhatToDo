@@ -5,10 +5,20 @@ package com.justinhu.whattodo;
  */
 
 public enum TaskCategoryEnum {
-    DEFAULT,
-    WORK,
-    SCHOOL,
-    EXERCISE,
-    PERSONAL,
-    RELAX
+    WORK(6),
+    SCHOOL(5),
+    DEFAULT(4),
+    EXERCISE(3),
+    PERSONAL(2),
+    RELAX(1);
+
+    int level;
+
+    TaskCategoryEnum(int i) {
+        level = i;
+    }
+
+    public int getLevel(){
+        return this.level;
+    }
 }

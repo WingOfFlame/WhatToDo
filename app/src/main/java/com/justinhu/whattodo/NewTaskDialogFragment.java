@@ -1,17 +1,14 @@
 package com.justinhu.whattodo;
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -40,23 +37,45 @@ import java.util.Locale;
 
 public class NewTaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
 
+    private int mode;
+
+    private TaskContract task;
+
     private EditText taskname;
     private ImageButton categoryButton;
     private RatingBar priority;
-
     private Switch trackableSwitch;
     private View trackableOptions;
     private EditText repetition;
     private TextView deadline;
     private DatePickerDialog deadlinePicker;
-    private SimpleDateFormat dateFormatter;
-
+    private SimpleDateFormat dateFormatter = TaskContract.dateFormatter;
     private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
     private NewTaskDialogListener listener;
+
+    private MenuItem saveAction;
+    private MenuItem editAction;
+
+    public static final String ARGS_KEY_MODE = "MODE";
+    public static final String ARGS_KEY_TASK = "TASK";
+    public static final int TASK_DIALOG_MODE_NEW = 0;
+    public static final int TASK_DIALOG_MODE_VIEW = 1;
+    public static final int TASK_DIALOG_MODE_EDIT = 2;
 
     public interface NewTaskDialogListener {
         public void onTaskSaveClick(TaskContract newTask);
     }
+
+    @Override
+    public void setArguments(Bundle args) {
+        super.setArguments(args);
+        this.mode = args.getInt(ARGS_KEY_MODE,TASK_DIALOG_MODE_NEW);
+        if(mode == TASK_DIALOG_MODE_VIEW||mode == TASK_DIALOG_MODE_EDIT){
+            task = (TaskContract) args.getSerializable(ARGS_KEY_TASK);
+        }
+
+    }
+
     /** The system calls this to get the DialogFragment's layout, regardless
      of whether it's being displayed as a dialog or an embedded fragment. */
     @Override
@@ -80,7 +99,7 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
         priority = (RatingBar) rootView.findViewById(R.id.priority);
 
         trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
-        trackableOptions = (View) rootView.findViewById(R.id.option);
+        trackableOptions = rootView.findViewById(R.id.option);
         trackableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -96,12 +115,11 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
         deadline = (TextView) rootView.findViewById(R.id.deadline);
         categoryButton = (ImageButton) rootView.findViewById(R.id.taskCategory);
 
-        dateFormatter = new SimpleDateFormat("E, MMM dd, yyyy", Locale.US);
         deadline.setOnClickListener(this);
         categoryButton.setOnClickListener(this);
 
         Calendar newCalendar = Calendar.getInstance();
-        deadline.setText(dateFormatter.format(newCalendar.getTime()));
+        deadline.setText(TaskContract.DEFAULT_DATE);
 
         deadlinePicker = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
 
@@ -114,7 +132,33 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
 
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
 
-
+        if(task!= null){
+            taskname.setText(task.name);
+            onTaskCategoryClick(task.category);
+            priority.setRating(task.priority);
+            trackableOptions.setVisibility( task.trackable?View.VISIBLE:View.GONE);
+            trackableSwitch.setChecked(task.trackable);
+            repetition.setText(String.format (Locale.US,"%d", task.repetition));
+            deadline.setText(task.deadline);
+        }else{
+            trackableOptions.setVisibility( View.GONE);
+            trackableSwitch.setChecked(false);
+        }
+        if(mode == TASK_DIALOG_MODE_NEW || mode == TASK_DIALOG_MODE_EDIT){
+            taskname.setEnabled(true);
+            categoryButton.setEnabled(true);
+            priority.setEnabled(true);
+            trackableSwitch.setEnabled(true);
+            repetition.setEnabled(true);
+            deadline.setEnabled(true);
+        }else if(mode == TASK_DIALOG_MODE_VIEW){
+            taskname.setEnabled(false);
+            categoryButton.setEnabled(false);
+            priority.setEnabled(false);
+            trackableSwitch.setEnabled(false);
+            repetition.setEnabled(false);
+            deadline.setEnabled(false);
+        }
 
         return rootView;
     }
@@ -148,7 +192,21 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
-        getActivity().getMenuInflater().inflate(R.menu.menu_add, menu);
+        getActivity().getMenuInflater().inflate(R.menu.menu_task, menu);
+        saveAction = menu.findItem(R.id.action_save);
+        editAction = menu.findItem(R.id.action_edit);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        super.onPrepareOptionsMenu(menu);
+        if(mode == TASK_DIALOG_MODE_NEW || mode == TASK_DIALOG_MODE_EDIT){
+            saveAction.setVisible(true);
+            editAction.setVisible(false);
+        }else if(mode == TASK_DIALOG_MODE_VIEW){
+            saveAction.setVisible(false);
+            editAction.setVisible(true);
+        }
     }
 
     @Override
@@ -191,7 +249,7 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
         taskCategory = category;
         switch (taskCategory){
             case DEFAULT:
-                categoryButton.setBackgroundResource(R.drawable.ic_assignment_grey_500_24dp);
+                categoryButton.setBackgroundResource(R.drawable.ic_default_grey_500_24dp);
                 break;
             case WORK:
                 categoryButton.setBackgroundResource(R.drawable.ic_work_red_500_24dp);
@@ -206,10 +264,10 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
                 categoryButton.setBackgroundResource(R.drawable.ic_person_green_500_24dp);
                 break;
             case RELAX:
-                categoryButton.setBackgroundResource(R.drawable.ic_music_note_light_green_500_24dp);
+                categoryButton.setBackgroundResource(R.drawable.ic_relax_light_green_500_24dp);
                 break;
             default:
-                categoryButton.setBackgroundResource(R.drawable.ic_assignment_grey_500_24dp);
+                categoryButton.setBackgroundResource(R.drawable.ic_default_grey_500_24dp);
                 break;
         }
     }
