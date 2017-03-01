@@ -80,9 +80,11 @@ public class TaskDbHelper extends SQLiteOpenHelper {
         values.put(TaskEntry.COLUMN_NAME_REPETITION, newTask.repetition);
         values.put(TaskEntry.COLUMN_NAME_DEADLINE, newTask.deadline);
 
-// Insert the new row, returning the primary key value of the new row
-        long newRowId = mDb.insert(TaskEntry.TABLE_NAME, null, values);
-
+        if(newTask.getId() > 0){
+            mDb.update(TaskEntry.TABLE_NAME, values,"_id = ? ", new String[] { Integer.toString(newTask.getId()) } );
+        }else{
+            mDb.insert(TaskEntry.TABLE_NAME, null, values);
+        }
 
     }
 
@@ -122,6 +124,11 @@ public class TaskDbHelper extends SQLiteOpenHelper {
         }
 
         return flatten;
+    }
+
+    public void deleteTask(int id) {
+        SQLiteDatabase mDb = getWritableDatabase();
+        mDb.delete(TaskEntry.TABLE_NAME, "_id = ?", new String[] { Integer.toString(id)});
     }
 
     public static class TaskEntry implements BaseColumns {

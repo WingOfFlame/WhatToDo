@@ -139,6 +139,12 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
         getSupportLoaderManager().restartLoader(0,null,this).forceLoad();
     }
 
+    @Override
+    public void onTaskDeleteClick(int id) {
+        mDbHelper.deleteTask(id);
+        getSupportLoaderManager().restartLoader(0,null,this).forceLoad();
+    }
+
 
     @Override
     public Loader<List<TaskContract>> onCreateLoader(int id, Bundle args) {

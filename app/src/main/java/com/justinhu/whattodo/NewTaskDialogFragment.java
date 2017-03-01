@@ -53,8 +53,10 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
     private NewTaskDialogListener listener;
 
+    private Menu mMenu;
     private MenuItem saveAction;
     private MenuItem editAction;
+    private MenuItem deleteAction;
 
     public static final String ARGS_KEY_MODE = "MODE";
     public static final String ARGS_KEY_TASK = "TASK";
@@ -64,13 +66,14 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
 
     public interface NewTaskDialogListener {
         public void onTaskSaveClick(TaskContract newTask);
+        public void onTaskDeleteClick(int id);
     }
 
     @Override
     public void setArguments(Bundle args) {
         super.setArguments(args);
         this.mode = args.getInt(ARGS_KEY_MODE,TASK_DIALOG_MODE_NEW);
-        if(mode == TASK_DIALOG_MODE_VIEW||mode == TASK_DIALOG_MODE_EDIT){
+        if(mode == TASK_DIALOG_MODE_VIEW){
             task = (TaskContract) args.getSerializable(ARGS_KEY_TASK);
         }
 
@@ -133,34 +136,37 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
 
         if(task!= null){
-            taskname.setText(task.name);
-            onTaskCategoryClick(task.category);
-            priority.setRating(task.priority);
-            trackableOptions.setVisibility( task.trackable?View.VISIBLE:View.GONE);
-            trackableSwitch.setChecked(task.trackable);
-            repetition.setText(String.format (Locale.US,"%d", task.repetition));
-            deadline.setText(task.deadline);
+            populateViews();
         }else{
             trackableOptions.setVisibility( View.GONE);
             trackableSwitch.setChecked(false);
         }
-        if(mode == TASK_DIALOG_MODE_NEW || mode == TASK_DIALOG_MODE_EDIT){
-            taskname.setEnabled(true);
-            categoryButton.setEnabled(true);
-            priority.setEnabled(true);
-            trackableSwitch.setEnabled(true);
-            repetition.setEnabled(true);
-            deadline.setEnabled(true);
+        if(mode == TASK_DIALOG_MODE_NEW){
+            setViewsEnabled(true);
         }else if(mode == TASK_DIALOG_MODE_VIEW){
-            taskname.setEnabled(false);
-            categoryButton.setEnabled(false);
-            priority.setEnabled(false);
-            trackableSwitch.setEnabled(false);
-            repetition.setEnabled(false);
-            deadline.setEnabled(false);
+            setViewsEnabled(false);
         }
 
         return rootView;
+    }
+
+    private void populateViews() {
+        taskname.setText(task.name);
+        onTaskCategoryClick(task.category);
+        priority.setRating(task.priority);
+        trackableOptions.setVisibility( task.trackable? View.VISIBLE:View.GONE);
+        trackableSwitch.setChecked(task.trackable);
+        repetition.setText(String.format (Locale.US,"%d", task.repetition));
+        deadline.setText(task.deadline);
+    }
+
+    private void setViewsEnabled(boolean enabled) {
+        taskname.setEnabled(enabled);
+        categoryButton.setEnabled(enabled);
+        priority.setEnabled(enabled);
+        trackableSwitch.setEnabled(enabled);
+        repetition.setEnabled(enabled);
+        deadline.setEnabled(enabled);
     }
 
     /** The system calls this only when creating the layout in a dialog. */
@@ -195,17 +201,26 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
         getActivity().getMenuInflater().inflate(R.menu.menu_task, menu);
         saveAction = menu.findItem(R.id.action_save);
         editAction = menu.findItem(R.id.action_edit);
+        deleteAction = menu.findItem(R.id.action_delete);
+        mMenu = menu;
     }
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
-        if(mode == TASK_DIALOG_MODE_NEW || mode == TASK_DIALOG_MODE_EDIT){
+        if(mode == TASK_DIALOG_MODE_NEW ){
             saveAction.setVisible(true);
             editAction.setVisible(false);
+            deleteAction.setVisible(false);
         }else if(mode == TASK_DIALOG_MODE_VIEW){
             saveAction.setVisible(false);
             editAction.setVisible(true);
+            deleteAction.setVisible(true);
+        }else if(mode == TASK_DIALOG_MODE_EDIT){
+            saveAction.setVisible(true);
+            editAction.setVisible(false);
+            deleteAction.setVisible(true);
+
         }
     }
 
@@ -221,13 +236,31 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
                     Integer.parseInt(repetition.getText().toString()),
                     deadline.getText().toString()
             );
+            if(task != null){
+                newTask.setId(task.getId());
+            }
             listener.onTaskSaveClick(newTask);
             dismiss();
             return true;
         } else if (id == android.R.id.home) {
             // handle close button click here
-            dismiss();
+            if (mode == TASK_DIALOG_MODE_EDIT){
+                mode = TASK_DIALOG_MODE_VIEW;
+                populateViews();
+                setViewsEnabled(false);
+                onPrepareOptionsMenu(mMenu);
+            }else{
+                dismiss();
+            }
             return true;
+        }else if (id == R.id.action_edit){
+            mode = TASK_DIALOG_MODE_EDIT;
+            setViewsEnabled(true);
+            onPrepareOptionsMenu(mMenu);
+            return true;
+        }else if(id == R.id.action_delete){
+            listener.onTaskDeleteClick(task.getId());
+            dismiss();
         }
 
         return super.onOptionsItemSelected(item);
