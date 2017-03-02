@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.provider.BaseColumns;
+import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -129,6 +130,12 @@ public class TaskDbHelper extends SQLiteOpenHelper {
     public void deleteTask(int id) {
         SQLiteDatabase mDb = getWritableDatabase();
         mDb.delete(TaskEntry.TABLE_NAME, "_id = ?", new String[] { Integer.toString(id)});
+    }
+
+    public void deleteMultiTask(ArrayList<String> toDelete) {
+        String args = TextUtils.join(",", toDelete);
+        SQLiteDatabase mDb = getWritableDatabase();
+        mDb.delete(TaskEntry.TABLE_NAME, "_id IN (" + args + ")", null);
     }
 
     public static class TaskEntry implements BaseColumns {

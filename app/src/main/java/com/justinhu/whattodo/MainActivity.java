@@ -1,7 +1,6 @@
 package com.justinhu.whattodo;
 
 
-import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -10,13 +9,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
-import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
-import android.support.v4.widget.SimpleCursorAdapter;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-
-import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -26,8 +21,8 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity  implements NewTaskDialogFragment.NewTaskDialogListener , LoaderManager.LoaderCallbacks<List<TaskContract>>{
     TaskDbHelper mDbHelper;
@@ -145,6 +140,10 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
         getSupportLoaderManager().restartLoader(0,null,this).forceLoad();
     }
 
+    private void onMultiTaskDelete(ArrayList<String> toDelete) {
+        mDbHelper.deleteMultiTask(toDelete);
+        getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
+    }
 
     @Override
     public Loader<List<TaskContract>> onCreateLoader(int id, Bundle args) {
@@ -201,8 +200,20 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.delete:
-                    Toast.makeText(MainActivity.this, "Shared " + taskList.getCheckedItemCount() +
-                            " items", Toast.LENGTH_SHORT).show();
+                    SparseBooleanArray checkedItems = taskList.getCheckedItemPositions();
+                    ArrayList<String> toDelete = new ArrayList<>();
+                    if (checkedItems != null) {
+                        for (int i = 0; i < checkedItems.size(); i++) {
+                            if (checkedItems.valueAt(i)) {
+                                TaskContract selecteditem = mAdapter.getItem(checkedItems.keyAt(i));
+                                // Remove selected items following the
+                                toDelete.add(String.valueOf(selecteditem.getId()));
+                            }
+                        }
+                    }
+                    onMultiTaskDelete(toDelete);
+                    Toast.makeText(MainActivity.this, "Deleted " + taskList.getCheckedItemCount() +
+                            " tasks", Toast.LENGTH_SHORT).show();
                     mode.finish();
                     break;
                 default:

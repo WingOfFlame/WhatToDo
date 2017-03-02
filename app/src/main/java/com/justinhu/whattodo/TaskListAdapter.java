@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -83,6 +82,8 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
                 holder = new TaskItemViewHolder();
                 holder.name = (TextView) convertView.findViewById(R.id.task_name);
                 ((TaskItemViewHolder)holder).priority = (RatingBar) convertView.findViewById(R.id.task_priority);
+                ((TaskItemViewHolder) holder).deadline = (TextView) convertView.findViewById(R.id.deadline);
+                ((TaskItemViewHolder) holder).repetition = (TextView) convertView.findViewById(R.id.repetition);
             }
             convertView.setTag(holder);
         }
@@ -140,11 +141,20 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
 
     private static class TaskItemViewHolder extends TaskViewHolder{
         RatingBar priority;
+        TextView deadline;
+        TextView repetition;
 
         @Override
         public void populateView(TaskContract task) {
             super.populateView(task);
             priority.setRating(task.priority);
+            deadline.setText("Due: " + task.deadline);
+            if (task.trackable) {
+                repetition.setVisibility(View.VISIBLE);
+                repetition.setText("Left: " + String.valueOf(task.repetition));
+            } else {
+                repetition.setVisibility(View.INVISIBLE);
+            }
         }
     }
 
