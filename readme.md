@@ -7,3 +7,5 @@ TODO:
 - mark task complete
 - increment completion status
 - keep history in last 24hr
+- embed taskselector in main activity and optimize
+- async db and/or content provider

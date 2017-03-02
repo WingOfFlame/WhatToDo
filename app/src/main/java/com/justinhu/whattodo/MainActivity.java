@@ -18,17 +18,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity  implements NewTaskDialogFragment.NewTaskDialogListener , LoaderManager.LoaderCallbacks<List<TaskContract>>{
+public class MainActivity extends AppCompatActivity  implements TaskDialogFragment.NewTaskDialogListener , LoaderManager.LoaderCallbacks<List<TaskContract>>, View.OnClickListener, AdapterView.OnItemClickListener {
+    List<TaskContract> mDataCopy;
     TaskDbHelper mDbHelper;
     ListView taskList;
     // This is the Adapter being used to display the list's data
     TaskListAdapter mAdapter;
+    Button randomSelect;
+    private FragmentManager fragmentManager;
+    private FloatingActionButton fab;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,23 +43,9 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Bundle args = new Bundle();
-                args.putInt(NewTaskDialogFragment.ARGS_KEY_MODE,NewTaskDialogFragment.TASK_DIALOG_MODE_NEW);
-                DialogFragment dialog = new NewTaskDialogFragment();
-                dialog.setArguments(args);
-                dialog.setRetainInstance(true);
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                transaction.add(android.R.id.content, dialog)
-                        .addToBackStack(null).commit();
-            }
-        });
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fragmentManager = getSupportFragmentManager();
+        fab.setOnClickListener(this);
 
         mDbHelper = TaskDbHelper.getInstance(MainActivity.this);
         mAdapter = new TaskListAdapter(this);
@@ -62,28 +54,11 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
         taskList.setAdapter(mAdapter);
         taskList.setMultiChoiceModeListener(new ModeCallback());
 
-        taskList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Bundle args = new Bundle();
-                args.putInt(NewTaskDialogFragment.ARGS_KEY_MODE,NewTaskDialogFragment.TASK_DIALOG_MODE_VIEW);
-                args.putSerializable(NewTaskDialogFragment.ARGS_KEY_TASK,(TaskContract)parent.getAdapter().getItem(position));
-                DialogFragment dialog = new NewTaskDialogFragment();
-                dialog.setArguments(args);
-                dialog.setRetainInstance(true);
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                FragmentTransaction transaction = fragmentManager.beginTransaction();
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-                transaction.add(android.R.id.content, dialog)
-                        .addToBackStack(null).commit();
-
-            }
+        taskList.setOnItemClickListener(this);
 
 
-        });
-
-
+        randomSelect = (Button) findViewById(R.id.select);
+        randomSelect.setOnClickListener(this);
         // Prepare the loader.  Either re-connect with an existing one,
         // or start a new one.
         getSupportLoaderManager().initLoader(0, null, this).forceLoad();
@@ -129,7 +104,6 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
 
     @Override
     public void onTaskSaveClick(TaskContract newTask) {
-        //TODO: make async?
         mDbHelper.saveNewTask(newTask);
         getSupportLoaderManager().restartLoader(0,null,this).forceLoad();
     }
@@ -159,6 +133,7 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
 
     @Override
     public void onLoadFinished(Loader<List<TaskContract>> loader, List<TaskContract> data) {
+        mDataCopy = data;
         mAdapter.clear();
         mAdapter.addAll(data);
     }
@@ -166,6 +141,42 @@ public class MainActivity extends AppCompatActivity  implements NewTaskDialogFra
     @Override
     public void onLoaderReset(Loader<List<TaskContract>> loader) {
         mAdapter.clear();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == randomSelect){
+            TaskContract task = TaskSelector.selectTask(mDataCopy);
+            Bundle args = new Bundle();
+            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_TAKE);
+            args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
+            spawnTaskDialog(args);
+        }else if (v == fab){
+            Bundle args = new Bundle();
+            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_NEW);
+            spawnTaskDialog(args);
+        }
+    }
+
+    private void spawnTaskDialog(Bundle args) {
+
+        DialogFragment dialog = new TaskDialogFragment();
+        dialog.setArguments(args);
+        dialog.setRetainInstance(true);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(android.R.id.content, dialog)
+                .addToBackStack(null).commit();
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Bundle args = new Bundle();
+        args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
+        args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, (TaskContract) parent.getAdapter().
+            getItem(position)
+        );
+        spawnTaskDialog(args);
     }
 
 

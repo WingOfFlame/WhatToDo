@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -35,12 +36,13 @@ import java.util.Locale;
  *  http://androidopentutorials.com/android-datepickerdialog-on-edittext-click-event/
  */
 
-public class NewTaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
+public class TaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
 
     private int mode;
 
     private TaskContract task;
 
+    private Toolbar toolbar;
     private EditText taskname;
     private ImageButton categoryButton;
     private RatingBar priority;
@@ -49,6 +51,7 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     private EditText repetition;
     private TextView deadline;
     private DatePickerDialog deadlinePicker;
+    private Button acceptButton;
     private SimpleDateFormat dateFormatter = TaskContract.dateFormatter;
     private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
     private NewTaskDialogListener listener;
@@ -63,6 +66,7 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     public static final int TASK_DIALOG_MODE_NEW = 0;
     public static final int TASK_DIALOG_MODE_VIEW = 1;
     public static final int TASK_DIALOG_MODE_EDIT = 2;
+    public static final int TASK_DIALOG_MODE_TAKE = 3;
 
     public interface NewTaskDialogListener {
         public void onTaskSaveClick(TaskContract newTask);
@@ -84,12 +88,11 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.dialog_newtask, container, false);
-        Toolbar toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+        View rootView = inflater.inflate(R.layout.dialog_task, container, false);
+        findViews(rootView);
+
         toolbar.setTitle("New Task");
-
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
-
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
@@ -98,11 +101,6 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
         }
         setHasOptionsMenu(true);
 
-        taskname = (EditText) rootView.findViewById(R.id.taskname);
-        priority = (RatingBar) rootView.findViewById(R.id.priority);
-
-        trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
-        trackableOptions = rootView.findViewById(R.id.option);
         trackableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -113,17 +111,10 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
                 }
             }
         });
-
-        repetition = (EditText)  rootView.findViewById(R.id.repetition);
-        deadline = (TextView) rootView.findViewById(R.id.deadline);
-        categoryButton = (ImageButton) rootView.findViewById(R.id.taskCategory);
-
         deadline.setOnClickListener(this);
         categoryButton.setOnClickListener(this);
 
         Calendar newCalendar = Calendar.getInstance();
-        deadline.setText(TaskContract.DEFAULT_DATE);
-
         deadlinePicker = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
 
             @Override
@@ -135,19 +126,36 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
 
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
 
+
+        trackableOptions.setVisibility( View.GONE);
+        trackableSwitch.setChecked(false);
+        deadline.setText(TaskContract.DEFAULT_DATE);
+        acceptButton.setVisibility(View.GONE);
+
         if(task!= null){
             populateViews();
-        }else{
-            trackableOptions.setVisibility( View.GONE);
-            trackableSwitch.setChecked(false);
         }
-        if(mode == TASK_DIALOG_MODE_NEW){
+        if(mode == TASK_DIALOG_MODE_NEW||mode == TASK_DIALOG_MODE_EDIT){
             setViewsEnabled(true);
-        }else if(mode == TASK_DIALOG_MODE_VIEW){
+        }else if(mode == TASK_DIALOG_MODE_VIEW||mode == TASK_DIALOG_MODE_TAKE){
             setViewsEnabled(false);
+            if(mode == TASK_DIALOG_MODE_TAKE){
+                acceptButton.setVisibility(View.VISIBLE);
+            }
         }
 
         return rootView;
+    }
+    private void findViews(View rootView){
+         toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+        taskname = (EditText) rootView.findViewById(R.id.taskname);
+        priority = (RatingBar) rootView.findViewById(R.id.priority);
+        trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
+        trackableOptions = rootView.findViewById(R.id.option);
+        repetition = (EditText)  rootView.findViewById(R.id.repetition);
+        deadline = (TextView) rootView.findViewById(R.id.deadline);
+        categoryButton = (ImageButton) rootView.findViewById(R.id.taskCategory);
+        acceptButton = (Button) rootView.findViewById(R.id.accept);
     }
 
     private void populateViews() {
@@ -272,7 +280,7 @@ public class NewTaskDialogFragment extends DialogFragment implements View.OnClic
             deadlinePicker.show();
         }else if(v == categoryButton){
             DialogFragment dialog = new TaskCategoryDialogFragment();
-            dialog.setTargetFragment(NewTaskDialogFragment.this,0);
+            dialog.setTargetFragment(TaskDialogFragment.this,0);
             dialog.show(getFragmentManager(), "TaskCategoryDialogFragment");
         }
     }

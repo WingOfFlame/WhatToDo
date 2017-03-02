@@ -199,10 +199,22 @@
                     android:textStyle="normal|bold" />
 
 
+
+
             </GridLayout>
 
         </LinearLayout>
 
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"/>
+
+        <Button
+            android:text="Accept this task?"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/accept" />
     </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>
