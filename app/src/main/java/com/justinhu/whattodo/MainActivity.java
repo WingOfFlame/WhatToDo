@@ -7,6 +7,8 @@ import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -24,6 +26,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     TaskDbHelper mDbHelper;
 
     TextView mTitle;
-    //View ongoingTask;
+    CoordinatorLayout ongoingTask;
     ListView taskList;
     TaskListAdapter mAdapter;
     Button randomSelect;
@@ -47,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     private Cursor oldCursor;
     private static final String TAG = "MainActivity";
+    //private BottomSheetBehavior bottomSheetBehavior;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +64,11 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         mTitle= (TextView) toolbar.findViewById(R.id.toolbar_title);
         mTitle.setText("All Tasks");
-        //ongoingTask = findViewById(R.id.view_ongoing_task);
+
+        ongoingTask = (CoordinatorLayout) findViewById(R.id.view_ongoing_task);
+        //bottomSheetBehavior = BottomSheetBehavior.from(ongoingTask);
+        //bottomSheetBehavior.setHideable(true);
+        //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fragmentManager = getSupportFragmentManager();
@@ -93,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     protected void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
+        Log.i(TAG, "fit system windows "+  ongoingTask.getFitsSystemWindows());
+
 
     }
 
@@ -149,6 +159,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     @Override
     public void onTaskAcceptClick(TaskContract acceptedTask) {
         //ongoingTask.setVisibility(View.VISIBLE);
+
+        //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        //bottomSheetBehavior.setPeekHeight(80);
+        //bottomSheetBehavior.setHideable(false);
 
     }
 

@@ -9,6 +9,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +40,7 @@ import java.util.Locale;
 
 public class TaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
 
+    private static final String TAG = "TaskDialogFragment";
     private int mode;
 
     private TaskContract task;
@@ -92,7 +94,10 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateView");
         View rootView = inflater.inflate(R.layout.dialog_task, container, false);
+        Log.i(TAG, "fit system windows "+  rootView.getFitsSystemWindows());
+
         findViews(rootView);
 
         toolbar.setTitle("New Task");
@@ -193,6 +198,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreateDialog");
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
