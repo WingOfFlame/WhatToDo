@@ -24,6 +24,7 @@ import android.widget.ImageButton;
 import android.widget.RatingBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -51,10 +52,12 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     private EditText repetition;
     private TextView deadline;
     private DatePickerDialog deadlinePicker;
-    private Button acceptButton;
     private SimpleDateFormat dateFormatter = TaskContract.dateFormatter;
     private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
     private NewTaskDialogListener listener;
+    private View takeTaskView;
+    private Button acceptButton;
+    private Button declineButton;
 
     private Menu mMenu;
     private MenuItem saveAction;
@@ -77,7 +80,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     public void setArguments(Bundle args) {
         super.setArguments(args);
         this.mode = args.getInt(ARGS_KEY_MODE,TASK_DIALOG_MODE_NEW);
-        if(mode == TASK_DIALOG_MODE_VIEW){
+        if(mode != TASK_DIALOG_MODE_NEW){
             task = (TaskContract) args.getSerializable(ARGS_KEY_TASK);
         }
 
@@ -113,6 +116,8 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         });
         deadline.setOnClickListener(this);
         categoryButton.setOnClickListener(this);
+        acceptButton.setOnClickListener(this);
+        declineButton.setOnClickListener(this);
 
         Calendar newCalendar = Calendar.getInstance();
         deadlinePicker = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
@@ -127,21 +132,25 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
 
 
-        trackableOptions.setVisibility( View.GONE);
-        trackableSwitch.setChecked(false);
-        deadline.setText(TaskContract.DEFAULT_DATE);
-        acceptButton.setVisibility(View.GONE);
 
         if(task!= null){
             populateViews();
+        }else{
+            deadline.setText(TaskContract.DEFAULT_DATE);
+            trackableSwitch.setChecked(false);
         }
+
+        if(mode == TASK_DIALOG_MODE_TAKE){
+            takeTaskView.setVisibility(View.VISIBLE);
+        }else{
+            takeTaskView.setVisibility(View.GONE);
+        }
+
         if(mode == TASK_DIALOG_MODE_NEW||mode == TASK_DIALOG_MODE_EDIT){
             setViewsEnabled(true);
         }else if(mode == TASK_DIALOG_MODE_VIEW||mode == TASK_DIALOG_MODE_TAKE){
             setViewsEnabled(false);
-            if(mode == TASK_DIALOG_MODE_TAKE){
-                acceptButton.setVisibility(View.VISIBLE);
-            }
+
         }
 
         return rootView;
@@ -155,7 +164,9 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         repetition = (EditText)  rootView.findViewById(R.id.repetition);
         deadline = (TextView) rootView.findViewById(R.id.deadline);
         categoryButton = (ImageButton) rootView.findViewById(R.id.taskCategory);
+        takeTaskView = rootView.findViewById(R.id.takeView);
         acceptButton = (Button) rootView.findViewById(R.id.accept);
+        declineButton = (Button) rootView.findViewById(R.id.decline);
     }
 
     private void populateViews() {
@@ -184,24 +195,6 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
-        /*AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-
-        builder.setPositiveButton("YES",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,
-                                        int which) {
-                        Toast.makeText(getContext(),"Yes is clicked",Toast.LENGTH_LONG).show();
-                    }
-                });
-        builder.setNeutralButton("CANCEL",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog,
-                                        int which) {
-                        Toast.makeText(getContext(),"Cancel is clicked",Toast.LENGTH_LONG).show();
-                    }
-                });
-        return builder.create();*/
     }
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -229,6 +222,10 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             editAction.setVisible(false);
             deleteAction.setVisible(true);
 
+        }else if(mode == TASK_DIALOG_MODE_TAKE){
+            saveAction.setVisible(false);
+            editAction.setVisible(false);
+            deleteAction.setVisible(false);
         }
     }
 
@@ -282,6 +279,10 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             DialogFragment dialog = new TaskCategoryDialogFragment();
             dialog.setTargetFragment(TaskDialogFragment.this,0);
             dialog.show(getFragmentManager(), "TaskCategoryDialogFragment");
+        }else if(v == declineButton){
+            dismiss();
+        }else if(v == acceptButton){
+            Toast.makeText(getActivity(), "Task Accepted", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -290,25 +291,25 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         taskCategory = category;
         switch (taskCategory){
             case DEFAULT:
-                categoryButton.setBackgroundResource(R.drawable.ic_default_grey_500_24dp);
+                categoryButton.setImageResource(R.drawable.btn_default_category);
                 break;
             case WORK:
-                categoryButton.setBackgroundResource(R.drawable.ic_work_red_500_24dp);
+                categoryButton.setImageResource(R.drawable.btn_work_category);
                 break;
             case SCHOOL:
-                categoryButton.setBackgroundResource(R.drawable.ic_school_orange_500_24dp);
+                categoryButton.setImageResource(R.drawable.btn_school_category);
                 break;
             case EXERCISE:
-                categoryButton.setBackgroundResource(R.drawable.ic_fitness_center_teal_500_24dp);
+                categoryButton.setImageResource(R.drawable.btn_fitness_category);
                 break;
             case PERSONAL:
-                categoryButton.setBackgroundResource(R.drawable.ic_person_green_500_24dp);
+                categoryButton.setImageResource(R.drawable.btn_person_category);
                 break;
             case RELAX:
-                categoryButton.setBackgroundResource(R.drawable.ic_relax_light_green_500_24dp);
+                categoryButton.setImageResource(R.drawable.btn_relax_category);
                 break;
             default:
-                categoryButton.setBackgroundResource(R.drawable.ic_default_grey_500_24dp);
+                categoryButton.setImageResource(R.drawable.btn_default_category);
                 break;
         }
     }

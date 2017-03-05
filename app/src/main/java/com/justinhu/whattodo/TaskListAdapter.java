@@ -1,12 +1,17 @@
 package com.justinhu.whattodo;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.RatingBar;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by justinhu on 2017-02-24.
@@ -96,6 +101,42 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
 
 
         return convertView;
+    }
+
+    public void addRaw(Cursor cursor) {
+        List<List<TaskContract>> group = new ArrayList<List<TaskContract>>(6);
+        for (int i =0; i <6; i++){
+            group.add(new ArrayList<TaskContract>());
+        }
+        cursor.moveToPosition(-1);
+        while (cursor.moveToNext()) {
+            String name = cursor.getString(1);
+            TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
+            int priority = cursor.getInt(3);
+            boolean trackable = cursor.getInt(4) == 1;
+            int repeat = cursor.getInt(5);
+            String deadline = cursor.getString(6);
+            TaskContract task = new TaskContract(name,
+                    category,
+                    priority,
+                    trackable,
+                    repeat,
+                    deadline);
+            task.setId(cursor.getInt(0));
+            group.get(category.getLevel() - 1).add(task);
+        }
+
+        List<TaskContract> flatten = new ArrayList<>();
+        for (TaskCategoryEnum category : TaskCategoryEnum.values()){
+            List<TaskContract> list = group.get(category.getLevel()-1);
+            if(!list.isEmpty()){
+                Collections.sort(list);
+                flatten.add(TaskContract.Separator(category));
+                flatten.addAll(list);
+            }
+        }
+        clear();
+        addAll(flatten);
     }
 
 

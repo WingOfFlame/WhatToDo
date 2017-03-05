@@ -69,10 +69,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_margin="8dp"
-                android:background="@drawable/ic_default_grey_500_24dp"
-                android:padding="8dp"
-                android:contentDescription="Task Category" />
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:src="@drawable/btn_default_category"
+                android:background="?attr/selectableItemBackgroundBorderless" />
 
 
         </LinearLayout>
@@ -210,11 +210,50 @@
             android:layout_height="0dp"
             android:layout_weight="1"/>
 
-        <Button
-            android:text="Accept this task?"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/takeView">
+
+        <TextView
+            android:text="Start working on this task?"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/accept" />
+            android:textAlignment="center"
+            android:textSize="24sp"
+            android:textAllCaps="false" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:text="Decline"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:id="@+id/decline"
+                android:background="@android:color/holo_red_light"
+                android:textColor="@android:color/white"
+                android:textStyle="normal|bold"
+                style="@style/Widget.AppCompat.Button.Colored" />
+
+            <Button
+                android:text="Accept"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_margin="8dp"
+                android:id="@+id/accept"
+                android:background="@android:color/holo_green_light"
+                android:textColor="@android:color/white"
+                android:textStyle="normal|bold"
+                style="@style/Widget.AppCompat.Button.Colored" />
+        </LinearLayout>
+    </LinearLayout>
     </LinearLayout>
 
 </android.support.design.widget.CoordinatorLayout>

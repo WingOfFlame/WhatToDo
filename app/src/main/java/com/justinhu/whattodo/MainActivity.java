@@ -1,6 +1,10 @@
 package com.justinhu.whattodo;
 
 
+import android.database.Cursor;
+import android.database.MatrixCursor;
+import android.database.MergeCursor;
+import android.database.sqlite.SQLiteCursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -12,6 +16,7 @@ import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.Menu;
@@ -25,7 +30,7 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity  implements TaskDialogFragment.NewTaskDialogListener , LoaderManager.LoaderCallbacks<List<TaskContract>>, View.OnClickListener, AdapterView.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener {
     List<TaskContract> mDataCopy;
     TaskDbHelper mDbHelper;
     ListView taskList;
@@ -35,8 +40,12 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
     private FragmentManager fragmentManager;
     private FloatingActionButton fab;
 
+    private Cursor oldCursor;
+    private static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -66,13 +75,28 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
     }
 
     @Override
+    protected void onStart() {
+        Log.i(TAG, "onStart");
+        super.onStart();
+    }
+
+    @Override
     protected void onResume() {
+        Log.i(TAG, "onResume");
         super.onResume();
 
     }
 
     @Override
+    protected void onStop() {
+        Log.i(TAG, "onStop");
+        super.onStop();
+    }
+
+    @Override
     protected void onDestroy() {
+        Log.i(TAG, "onDestroy");
+        oldCursor.close();
         mDbHelper.close();
         super.onDestroy();
     }
@@ -95,7 +119,7 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
-        }else if(id == R.id.action_save){
+        } else if (id == R.id.action_save) {
             return false;
         }
 
@@ -105,13 +129,13 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
     @Override
     public void onTaskSaveClick(TaskContract newTask) {
         mDbHelper.saveNewTask(newTask);
-        getSupportLoaderManager().restartLoader(0,null,this).forceLoad();
+        getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
     }
 
     @Override
     public void onTaskDeleteClick(int id) {
         mDbHelper.deleteTask(id);
-        getSupportLoaderManager().restartLoader(0,null,this).forceLoad();
+        getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
     }
 
     private void onMultiTaskDelete(ArrayList<String> toDelete) {
@@ -120,38 +144,68 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
     }
 
     @Override
-    public Loader<List<TaskContract>> onCreateLoader(int id, Bundle args) {
-        return new AsyncTaskLoader<List<TaskContract>>( MainActivity.this )
-        {
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        Log.i(TAG, "onCreateLoader");
+        return new AsyncTaskLoader<Cursor>(MainActivity.this) {
             @Override
-            public List<TaskContract> loadInBackground()
-            {
-                return mDbHelper.getTasks();
+            public Cursor loadInBackground() {
+                Log.i(TAG, "Getting Cursor");
+                return mDbHelper.getTasksCursor();
             }
         };
     }
 
     @Override
-    public void onLoadFinished(Loader<List<TaskContract>> loader, List<TaskContract> data) {
-        mDataCopy = data;
-        mAdapter.clear();
-        mAdapter.addAll(data);
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        /*
+        If we use instant rerun from Android Studio,
+        onLoaderReset is not called when destroying activity,
+        so the cursor would be an closed old one
+        */
+        Log.i(TAG, "onLoadFinished  ");
+        mAdapter.addRaw(cursor);
+        copyData(cursor);
+        cursor.close();
+    }
+
+    private void copyData(Cursor cursor) {
+        cursor.moveToPosition(-1);
+        List<TaskContract> copy = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            String name = cursor.getString(1);
+            TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
+            int priority = cursor.getInt(3);
+            boolean trackable = cursor.getInt(4) == 1;
+            int repeat = cursor.getInt(5);
+            String deadline = cursor.getString(6);
+            TaskContract task = new TaskContract(name,
+                    category,
+                    priority,
+                    trackable,
+                    repeat,
+                    deadline);
+            task.setId(cursor.getInt(0));
+            copy.add(task);
+        }
+
+        mDataCopy = copy;
     }
 
     @Override
-    public void onLoaderReset(Loader<List<TaskContract>> loader) {
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.i(TAG, "Loader reset");
         mAdapter.clear();
     }
 
     @Override
     public void onClick(View v) {
-        if (v == randomSelect){
+        if (v == randomSelect) {
             TaskContract task = TaskSelector.selectTask(mDataCopy);
             Bundle args = new Bundle();
             args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_TAKE);
             args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
             spawnTaskDialog(args);
-        }else if (v == fab){
+        } else if (v == fab) {
             Bundle args = new Bundle();
             args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_NEW);
             spawnTaskDialog(args);
@@ -174,11 +228,10 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
         Bundle args = new Bundle();
         args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
         args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, (TaskContract) parent.getAdapter().
-            getItem(position)
+                getItem(position)
         );
         spawnTaskDialog(args);
     }
-
 
 
     private class ModeCallback implements ListView.MultiChoiceModeListener {
@@ -189,17 +242,19 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
             mode.setTitle("Select Items");
             return true;
         }
+
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             return false;
         }
+
         @Override
-        public void onDestroyActionMode(ActionMode mode){
+        public void onDestroyActionMode(ActionMode mode) {
             SparseBooleanArray checkedItems = taskList.getCheckedItemPositions();
             if (checkedItems != null) {
-                for (int i=0; i<checkedItems.size(); i++) {
-                    if(checkedItems.valueAt(i)){
-                        taskList.setItemChecked(checkedItems.keyAt(i),false);
+                for (int i = 0; i < checkedItems.size(); i++) {
+                    if (checkedItems.valueAt(i)) {
+                        taskList.setItemChecked(checkedItems.keyAt(i), false);
                     }
                 }
             }
@@ -238,10 +293,10 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
         @Override
         public void onItemCheckedStateChanged(ActionMode mode,
                                               int position, long id, boolean checked) {
-            View view = getViewByPosition(position,taskList);
-            if (checked){
+            View view = getViewByPosition(position, taskList);
+            if (checked) {
                 view.setBackgroundColor(Color.LTGRAY);
-            }else{
+            } else {
                 view.setBackgroundColor(Color.TRANSPARENT);
             }
             final int checkedCount = taskList.getCheckedItemCount();
@@ -257,11 +312,12 @@ public class MainActivity extends AppCompatActivity  implements TaskDialogFragme
                     break;
             }
         }
+
         public View getViewByPosition(int pos, ListView listView) {
             final int firstListItemPosition = listView.getFirstVisiblePosition();
             final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
 
-            if (pos < firstListItemPosition || pos > lastListItemPosition ) {
+            if (pos < firstListItemPosition || pos > lastListItemPosition) {
                 return listView.getAdapter().getView(pos, null, listView);
             } else {
                 final int childIndex = pos - firstListItemPosition;

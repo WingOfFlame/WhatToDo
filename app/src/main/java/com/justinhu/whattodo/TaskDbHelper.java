@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.AsyncTask;
 import android.provider.BaseColumns;
 import android.text.TextUtils;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +22,7 @@ import java.util.List;
  */
 
 public class TaskDbHelper extends SQLiteOpenHelper {
+    private static final String TAG = "TaskDbHelper";
     private static TaskDbHelper sInstance;
     // If you change the database schema, you must increment the database version.
     public static final int DATABASE_VERSION = 1;
@@ -89,42 +91,15 @@ public class TaskDbHelper extends SQLiteOpenHelper {
 
     }
 
-    public List<TaskContract> getTasks(){//TODO:create test for this
+    public Cursor getTasksCursor(){//TODO:create test for this
+
         SQLiteDatabase mDb = getWritableDatabase();
         String selectQuery = "SELECT  * FROM " + TaskEntry.TABLE_NAME;
         Cursor cursor = mDb.rawQuery(selectQuery, null);
-        List<List<TaskContract>> group = new ArrayList<List<TaskContract>>(6);
-        for (int i =0; i <6; i++){
-            group.add(new ArrayList<TaskContract>());
-        }
-        while (cursor.moveToNext()) {
-            String name = cursor.getString(1);
-            TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
-            int priority = cursor.getInt(3);
-            boolean trackable = cursor.getInt(4) == 1;
-            int repeat = cursor.getInt(5);
-            String deadline = cursor.getString(6);
-             TaskContract task = new TaskContract(name,
-                    category,
-                    priority,
-                    trackable,
-                    repeat,
-                    deadline);
-            task.setId(cursor.getInt(0));
-            group.get(category.getLevel()-1).add(task);
-        }
-        cursor.close();
-        List<TaskContract> flatten = new ArrayList<>();
-        for (TaskCategoryEnum category : TaskCategoryEnum.values()){
-            List<TaskContract> list = group.get(category.getLevel()-1);
-            if(!list.isEmpty()){
-                Collections.sort(list);
-                flatten.add(TaskContract.Separator(category));
-                flatten.addAll(list);
-            }
-        }
 
-        return flatten;
+        Log.i(TAG,"Return task cursor: "+cursor.toString());
+
+        return cursor;
     }
 
     public void deleteTask(int id) {
