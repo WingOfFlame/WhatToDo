@@ -74,6 +74,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     public interface NewTaskDialogListener {
         public void onTaskSaveClick(TaskContract newTask);
         public void onTaskDeleteClick(int id);
+        public void onTaskAcceptClick(TaskContract acceptedTask);
     }
 
     @Override
@@ -282,6 +283,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         }else if(v == declineButton){
             dismiss();
         }else if(v == acceptButton){
+            listener.onTaskAcceptClick(task);
             Toast.makeText(getActivity(), "Task Accepted", Toast.LENGTH_SHORT).show();
         }
     }

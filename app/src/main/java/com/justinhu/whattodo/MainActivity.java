@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -33,10 +34,14 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener {
     List<TaskContract> mDataCopy;
     TaskDbHelper mDbHelper;
+
+    TextView mTitle;
+    //View ongoingTask;
     ListView taskList;
-    // This is the Adapter being used to display the list's data
     TaskListAdapter mAdapter;
     Button randomSelect;
+
+
     private FragmentManager fragmentManager;
     private FloatingActionButton fab;
 
@@ -49,9 +54,14 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        /* https://guides.codepath.com/android/Using-the-App-Toolbar */
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        mTitle= (TextView) toolbar.findViewById(R.id.toolbar_title);
+        mTitle.setText("All Tasks");
+        //ongoingTask = findViewById(R.id.view_ongoing_task);
+
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fragmentManager = getSupportFragmentManager();
         fab.setOnClickListener(this);
@@ -62,7 +72,6 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         taskList = (ListView) findViewById(R.id.taskList);
         taskList.setAdapter(mAdapter);
         taskList.setMultiChoiceModeListener(new ModeCallback());
-
         taskList.setOnItemClickListener(this);
 
 
@@ -96,9 +105,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     @Override
     protected void onDestroy() {
         Log.i(TAG, "onDestroy");
-        oldCursor.close();
-        mDbHelper.close();
         super.onDestroy();
+        mDbHelper.close();
     }
 
     @Override
@@ -138,6 +146,12 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
     }
 
+    @Override
+    public void onTaskAcceptClick(TaskContract acceptedTask) {
+        //ongoingTask.setVisibility(View.VISIBLE);
+
+    }
+
     private void onMultiTaskDelete(ArrayList<String> toDelete) {
         mDbHelper.deleteMultiTask(toDelete);
         getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
@@ -165,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         Log.i(TAG, "onLoadFinished  ");
         mAdapter.addRaw(cursor);
         copyData(cursor);
-        cursor.close();
+        oldCursor = cursor;
     }
 
     private void copyData(Cursor cursor) {
@@ -194,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
         Log.i(TAG, "Loader reset");
-        mAdapter.clear();
+        oldCursor.close();
     }
 
     @Override
