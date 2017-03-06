@@ -37,20 +37,25 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener {
     List<TaskContract> mDataCopy;
     TaskDbHelper mDbHelper;
+    private Cursor oldCursor;
 
     TextView mTitle;
-    CoordinatorLayout ongoingTask;
     ListView taskList;
     TaskListAdapter mAdapter;
+    View bottomSheetShadow;
+    CoordinatorLayout ongoingTask;
+    private BottomSheetBehavior bottomSheetBehavior;
+    TextView taskName;
+
     Button randomSelect;
 
 
     private FragmentManager fragmentManager;
     private FloatingActionButton fab;
 
-    private Cursor oldCursor;
+
     private static final String TAG = "MainActivity";
-    //private BottomSheetBehavior bottomSheetBehavior;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,9 +71,13 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         mTitle.setText("All Tasks");
 
         ongoingTask = (CoordinatorLayout) findViewById(R.id.view_ongoing_task);
-        //bottomSheetBehavior = BottomSheetBehavior.from(ongoingTask);
-        //bottomSheetBehavior.setHideable(true);
-        //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        //ongoingTask.setVisibility(View.GONE);
+        bottomSheetShadow = findViewById(R.id.shadow);
+        bottomSheetShadow.setVisibility(View.INVISIBLE);
+        bottomSheetBehavior = BottomSheetBehavior.from(ongoingTask);
+        bottomSheetBehavior.setHideable(true);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        taskName = (TextView) findViewById(R.id.task_name);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fragmentManager = getSupportFragmentManager();
@@ -159,11 +168,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     @Override
     public void onTaskAcceptClick(TaskContract acceptedTask) {
         //ongoingTask.setVisibility(View.VISIBLE);
-
-        //bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
-        //bottomSheetBehavior.setPeekHeight(80);
-        //bottomSheetBehavior.setHideable(false);
-
+        taskName.setText(acceptedTask.name);
+        bottomSheetShadow.setVisibility(View.VISIBLE);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        bottomSheetBehavior.setHideable(false);
     }
 
     private void onMultiTaskDelete(ArrayList<String> toDelete) {

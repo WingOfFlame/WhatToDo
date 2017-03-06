@@ -22,9 +22,12 @@
         android:choiceMode="multipleChoiceModal" />
 
     <Button
-        android:text="Button"
+        android:id="@+id/select"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:id="@+id/select" />
+        android:layout_margin="8dp"
+        android:background="@color/colorPrimary"
+        android:text="Get a Task"
+        android:textColor="@android:color/white" />
 </LinearLayout>

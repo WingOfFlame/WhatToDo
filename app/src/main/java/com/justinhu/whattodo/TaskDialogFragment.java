@@ -290,7 +290,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             dismiss();
         }else if(v == acceptButton){
             listener.onTaskAcceptClick(task);
-            Toast.makeText(getActivity(), "Task Accepted", Toast.LENGTH_SHORT).show();
+            dismiss();
         }
     }
 
