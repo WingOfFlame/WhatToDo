@@ -87,8 +87,8 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
                 holder = new TaskItemViewHolder();
                 holder.name = (TextView) convertView.findViewById(R.id.task_name);
                 ((TaskItemViewHolder)holder).priority = (RatingBar) convertView.findViewById(R.id.task_priority);
-                ((TaskItemViewHolder) holder).deadline = (TextView) convertView.findViewById(R.id.deadline);
-                ((TaskItemViewHolder) holder).repetition = (TextView) convertView.findViewById(R.id.repetition);
+                ((TaskItemViewHolder) holder).deadline = (TextView) convertView.findViewById(R.id.task_deadline);
+                ((TaskItemViewHolder) holder).repetition = (TextView) convertView.findViewById(R.id.task_count);
             }
             convertView.setTag(holder);
         }

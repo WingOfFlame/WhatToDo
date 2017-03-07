@@ -25,7 +25,6 @@ import android.widget.ImageButton;
 import android.widget.RatingBar;
 import android.widget.Switch;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -167,9 +166,9 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         priority = (RatingBar) rootView.findViewById(R.id.priority);
         trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
         trackableOptions = rootView.findViewById(R.id.option);
-        repetition = (EditText)  rootView.findViewById(R.id.repetition);
-        deadline = (TextView) rootView.findViewById(R.id.deadline);
-        categoryButton = (ImageButton) rootView.findViewById(R.id.taskCategory);
+        repetition = (EditText)  rootView.findViewById(R.id.task_count);
+        deadline = (TextView) rootView.findViewById(R.id.task_deadline);
+        categoryButton = (ImageButton) rootView.findViewById(R.id.task_category);
         takeTaskView = rootView.findViewById(R.id.takeView);
         acceptButton = (Button) rootView.findViewById(R.id.accept);
         declineButton = (Button) rootView.findViewById(R.id.decline);

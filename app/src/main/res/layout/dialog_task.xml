@@ -64,7 +64,7 @@
             </android.support.design.widget.TextInputLayout>
 
             <ImageButton
-                android:id="@+id/taskCategory"
+                android:id="@+id/task_category"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -158,7 +158,7 @@
                 <EditText
                     android:layout_width="40dp"
                     android:layout_height="wrap_content"
-                    android:id="@+id/repetition"
+                    android:id="@+id/task_count"
                     android:maxLines="1"
                     android:selectAllOnFocus="true"
                     android:text="1"
@@ -184,7 +184,7 @@
                     android:textSize="18sp" />
 
                 <TextView
-                    android:id="@+id/deadline"
+                    android:id="@+id/task_deadline"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_column="2"

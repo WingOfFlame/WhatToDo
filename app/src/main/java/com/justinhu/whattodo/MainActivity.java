@@ -2,11 +2,9 @@ package com.justinhu.whattodo;
 
 
 import android.database.Cursor;
-import android.database.MatrixCursor;
-import android.database.MergeCursor;
-import android.database.sqlite.SQLiteCursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -26,7 +24,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,39 +58,56 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     protected void onCreate(Bundle savedInstanceState) {
         Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        /* https://guides.codepath.com/android/Using-the-App-Toolbar */
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        mTitle= (TextView) toolbar.findViewById(R.id.toolbar_title);
-        mTitle.setText("All Tasks");
-
-        ongoingTask = (CoordinatorLayout) findViewById(R.id.view_ongoing_task);
-        //ongoingTask.setVisibility(View.GONE);
-        bottomSheetShadow = findViewById(R.id.shadow);
-        bottomSheetShadow.setVisibility(View.INVISIBLE);
-        bottomSheetBehavior = BottomSheetBehavior.from(ongoingTask);
-        bottomSheetBehavior.setHideable(true);
-        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
-        taskName = (TextView) findViewById(R.id.task_name);
-
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        fragmentManager = getSupportFragmentManager();
-        fab.setOnClickListener(this);
 
         mDbHelper = TaskDbHelper.getInstance(MainActivity.this);
-        mAdapter = new TaskListAdapter(this);
 
+        setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
         taskList = (ListView) findViewById(R.id.taskList);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        randomSelect = (Button) findViewById(R.id.select);
+        bottomSheetShadow = findViewById(R.id.shadow);
+        ongoingTask = (CoordinatorLayout) findViewById(R.id.view_ongoing_task);
+        taskName = (TextView) findViewById(R.id.task_name);
+
+
+
+
+        /* https://guides.codepath.com/android/Using-the-App-Toolbar */
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        mTitle.setText("All Tasks");
+
+        mAdapter = new TaskListAdapter(this);
         taskList.setAdapter(mAdapter);
         taskList.setMultiChoiceModeListener(new ModeCallback());
         taskList.setOnItemClickListener(this);
 
+        fragmentManager = getSupportFragmentManager();
+        fab.setOnClickListener(this);
 
-        randomSelect = (Button) findViewById(R.id.select);
         randomSelect.setOnClickListener(this);
+
+        //ongoingTask.setVisibility(View.GONE);
+        bottomSheetShadow.setVisibility(View.INVISIBLE);
+        bottomSheetBehavior = BottomSheetBehavior.from(ongoingTask);
+        bottomSheetBehavior.setHideable(true);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                fab.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
+
+            }
+        });
+
+
         // Prepare the loader.  Either re-connect with an existing one,
         // or start a new one.
         getSupportLoaderManager().initLoader(0, null, this).forceLoad();
@@ -110,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     protected void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
-        Log.i(TAG, "fit system windows "+  ongoingTask.getFitsSystemWindows());
+        Log.i(TAG, "fit system windows " + ongoingTask.getFitsSystemWindows());
 
 
     }
@@ -174,10 +188,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         bottomSheetBehavior.setHideable(false);
     }
 
-    private void onMultiTaskDelete(ArrayList<String> toDelete) {
-        mDbHelper.deleteMultiTask(toDelete);
-        getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
-    }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -204,6 +215,49 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         oldCursor = cursor;
     }
 
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        Log.i(TAG, "Loader reset");
+        oldCursor.close();
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == randomSelect) {
+            TaskContract task = TaskSelector.selectTask(mDataCopy);
+            Bundle args = new Bundle();
+            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_TAKE);
+            args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
+            spawnTaskDialog(args);
+        } else if (v == fab) {
+            Bundle args = new Bundle();
+            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_NEW);
+            spawnTaskDialog(args);
+        }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Bundle args = new Bundle();
+        args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
+        args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, (TaskContract) parent.getAdapter().
+                getItem(position)
+        );
+        spawnTaskDialog(args);
+    }
+
+    private void spawnTaskDialog(Bundle args) {
+
+        DialogFragment dialog = new TaskDialogFragment();
+        dialog.setArguments(args);
+        dialog.setRetainInstance(true);
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
+        transaction.add(android.R.id.content, dialog)
+                .addToBackStack(null).commit();
+    }
+
     private void copyData(Cursor cursor) {
         cursor.moveToPosition(-1);
         List<TaskContract> copy = new ArrayList<>();
@@ -227,47 +281,11 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         mDataCopy = copy;
     }
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-        Log.i(TAG, "Loader reset");
-        oldCursor.close();
+    private void onMultiTaskDelete(ArrayList<String> toDelete) {
+        mDbHelper.deleteMultiTask(toDelete);
+        getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
     }
 
-    @Override
-    public void onClick(View v) {
-        if (v == randomSelect) {
-            TaskContract task = TaskSelector.selectTask(mDataCopy);
-            Bundle args = new Bundle();
-            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_TAKE);
-            args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
-            spawnTaskDialog(args);
-        } else if (v == fab) {
-            Bundle args = new Bundle();
-            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_NEW);
-            spawnTaskDialog(args);
-        }
-    }
-
-    private void spawnTaskDialog(Bundle args) {
-
-        DialogFragment dialog = new TaskDialogFragment();
-        dialog.setArguments(args);
-        dialog.setRetainInstance(true);
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN);
-        transaction.add(android.R.id.content, dialog)
-                .addToBackStack(null).commit();
-    }
-
-    @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Bundle args = new Bundle();
-        args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
-        args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, (TaskContract) parent.getAdapter().
-                getItem(position)
-        );
-        spawnTaskDialog(args);
-    }
 
 
     private class ModeCallback implements ListView.MultiChoiceModeListener {

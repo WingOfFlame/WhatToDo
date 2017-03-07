@@ -15,20 +15,18 @@
 
         <TextView
             android:text="TextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/task_name" />
-
-        <Space
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1" />
+            android:layout_weight="1"
+            android:ellipsize="none"
+            android:scrollHorizontally="false"
+            android:id="@+id/task_name" />
 
         <TextView
             android:text="Due: Mon, May 23, 2017"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/deadline" />
+            android:id="@+id/task_deadline" />
 
     </LinearLayout>
 
@@ -56,7 +54,7 @@
             android:text="Left: 12"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/repetition" />
+            android:id="@+id/task_count" />
     </LinearLayout>
 
 </LinearLayout>
