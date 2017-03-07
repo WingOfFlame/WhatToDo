@@ -1,6 +1,7 @@
 package com.justinhu.whattodo;
 
 
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -30,10 +31,13 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener {
+    public static final String CURRENT_TASK = "currentTask";
     List<TaskContract> mDataCopy;
     TaskDbHelper mDbHelper;
     private Cursor oldCursor;
@@ -59,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     private FragmentManager fragmentManager;
     private FloatingActionButton fab;
 
+    SharedPreferences storage;
 
     private static final String TAG = "MainActivity";
 
@@ -131,6 +136,16 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         // or start a new one.
         getSupportLoaderManager().initLoader(0, null, this).forceLoad();
 
+        // Restore preferences
+        storage = getPreferences(MODE_PRIVATE);
+        String currentTaskStr = storage.getString(CURRENT_TASK, null);
+        if(currentTaskStr != null){
+            Gson g = new Gson();
+            TaskContract task = g.fromJson(currentTaskStr, TaskContract.class);
+            currentTask = task;
+            updateBottomSheet(task);
+        }
+
     }
 
     @Override
@@ -202,6 +217,16 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     public void onTaskAcceptClick(TaskContract acceptedTask) {
         currentTask = acceptedTask;
 
+        updateBottomSheet(acceptedTask);
+
+        SharedPreferences.Editor prefsEditor = storage.edit();
+        Gson g = new Gson();
+        String currentTaskStr = g.toJson(currentTask);
+        prefsEditor.putString(CURRENT_TASK, currentTaskStr);
+        prefsEditor.apply();
+    }
+
+    private void updateBottomSheet(TaskContract acceptedTask) {
         taskName.setText(acceptedTask.name);
         switch (acceptedTask.category){
             case DEFAULT:
@@ -296,6 +321,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             bottomSheetShadow.setVisibility(View.INVISIBLE);
             bottomSheetBehavior.setHideable(true);
             bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+            SharedPreferences.Editor prefsEditor = storage.edit();
+            prefsEditor.remove(CURRENT_TASK);
+            prefsEditor.apply();
         }
     }
 
