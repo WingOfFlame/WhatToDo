@@ -24,7 +24,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -43,9 +45,16 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     CoordinatorLayout ongoingTask;
     private BottomSheetBehavior bottomSheetBehavior;
     TextView taskName;
+    ImageView taskCategory;
+    RatingBar taskPriority;
+    TextView taskCount;
+    TextView taskDeadline;
+    Button taskAbort;
+    Button taskDid;
 
     Button randomSelect;
 
+    TaskContract currentTask = null;
 
     private FragmentManager fragmentManager;
     private FloatingActionButton fab;
@@ -70,14 +79,21 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         bottomSheetShadow = findViewById(R.id.shadow);
         ongoingTask = (CoordinatorLayout) findViewById(R.id.view_ongoing_task);
         taskName = (TextView) findViewById(R.id.task_name);
-
-
-
+        taskCategory = (ImageView) findViewById(R.id.task_category);
+        taskPriority = (RatingBar) findViewById(R.id.task_priority);
+        taskCount = (TextView) findViewById(R.id.task_count);
+        taskDeadline = (TextView) findViewById(R.id.task_deadline);
+        taskAbort = (Button) findViewById(R.id.button_abort);
+        taskDid = (Button) findViewById(R.id.button_did);
 
         /* https://guides.codepath.com/android/Using-the-App-Toolbar */
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
-        mTitle.setText("All Tasks");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        } else {
+            Log.w(TAG, "SupportActionBar is null");
+        }
+        mTitle.setText(R.string.toolbar_title);
 
         mAdapter = new TaskListAdapter(this);
         taskList.setAdapter(mAdapter);
@@ -102,10 +118,13 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                fab.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
-
+                if(slideOffset >=0){
+                    fab.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
+                }
             }
         });
+        taskAbort.setOnClickListener(this);
+        taskDid.setOnClickListener(this);
 
 
         // Prepare the loader.  Either re-connect with an existing one,
@@ -181,13 +200,43 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     @Override
     public void onTaskAcceptClick(TaskContract acceptedTask) {
-        //ongoingTask.setVisibility(View.VISIBLE);
+        currentTask = acceptedTask;
+
         taskName.setText(acceptedTask.name);
+        switch (acceptedTask.category){
+            case DEFAULT:
+                taskCategory.setImageResource(R.drawable.ic_default_grey_500_24dp);
+                break;
+            case WORK:
+                taskCategory.setImageResource(R.drawable.ic_work_red_500_24dp);
+                break;
+            case SCHOOL:
+                taskCategory.setImageResource(R.drawable.ic_school_orange_500_24dp);
+                break;
+            case EXERCISE:
+                taskCategory.setImageResource(R.drawable.ic_fitness_center_teal_500_24dp);
+                break;
+            case PERSONAL:
+                taskCategory.setImageResource(R.drawable.ic_person_green_500_24dp);
+                break;
+            case RELAX:
+                taskCategory.setImageResource(R.drawable.ic_relax_light_green_500_24dp);
+                break;
+            default:
+                taskCategory.setImageResource(R.drawable.ic_default_grey_500_24dp);
+                break;
+        }
+        taskPriority.setRating(acceptedTask.priority);
+        String countLabel = getResources().getQuantityString(R.plurals.label_times_left,acceptedTask.repetition,acceptedTask.repetition);
+        taskCount.setText(countLabel);
+        String deadlineLabel = getResources().getString(R.string.label_due,acceptedTask.deadline);
+        taskDeadline.setText(deadlineLabel);
+
+
         bottomSheetShadow.setVisibility(View.VISIBLE);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
         bottomSheetBehavior.setHideable(false);
     }
-
 
 
     @Override
@@ -234,6 +283,19 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             Bundle args = new Bundle();
             args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_NEW);
             spawnTaskDialog(args);
+        }else if (v == taskAbort || v == taskDid){
+            if(v == taskDid){
+                if(currentTask.repetition>1){
+                    currentTask.repetition -=1;
+                    onTaskSaveClick(currentTask);
+                }else{
+                    onTaskDeleteClick(currentTask.getId());
+                }
+            }
+            currentTask = null;
+            bottomSheetShadow.setVisibility(View.INVISIBLE);
+            bottomSheetBehavior.setHideable(true);
+            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         }
     }
 
@@ -287,7 +349,6 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     }
 
 
-
     private class ModeCallback implements ListView.MultiChoiceModeListener {
 
         @Override
@@ -326,8 +387,13 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
                         for (int i = 0; i < checkedItems.size(); i++) {
                             if (checkedItems.valueAt(i)) {
                                 TaskContract selecteditem = mAdapter.getItem(checkedItems.keyAt(i));
-                                // Remove selected items following the
-                                toDelete.add(String.valueOf(selecteditem.getId()));
+                                if(selecteditem != null){
+                                    // Remove selected items following the
+                                    toDelete.add(String.valueOf(selecteditem.getId()));
+                                }else{
+                                    Log.w(TAG,String.format("Deleting selected item at position %d but adapter returns null",checkedItems.keyAt(i)));
+                                }
+
                             }
                         }
                     }
@@ -367,7 +433,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             }
         }
 
-        public View getViewByPosition(int pos, ListView listView) {
+        View getViewByPosition(int pos, ListView listView) {
             final int firstListItemPosition = listView.getFirstVisiblePosition();
             final int lastListItemPosition = firstListItemPosition + listView.getChildCount() - 1;
 

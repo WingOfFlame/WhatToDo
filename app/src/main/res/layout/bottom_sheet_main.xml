@@ -33,7 +33,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
                 android:paddingTop="8dp"
-                android:text="Working on:"
+                android:text="@string/label_working"
                 android:textColor="@android:color/black" />
 
             <LinearLayout
@@ -48,7 +48,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:tint="@color/colorPrimaryDark"
-                    app:srcCompat="@drawable/ic_default_grey_500_24dp" />
+                    app:srcCompat="@drawable/ic_default_grey_500_24dp"
+                    android:contentDescription="@null" />
 
                 <Space
                     android:layout_width="8dp"
@@ -60,7 +61,6 @@
                     android:layout_height="wrap_content"
                     android:ellipsize="none"
                     android:scrollHorizontally="false"
-                    android:text="Task Name but this is a really long name"
                     android:textColor="@android:color/black"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -88,7 +88,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Complete in X times"
             android:textSize="16sp" />
 
         <Space
@@ -100,7 +99,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
-            android:text="Due on XX,XX,XX,XXXX"
+            android:text="@string/label_due"
             android:textSize="16sp" />
 
         <Space
@@ -117,12 +116,12 @@
 
 
         <Button
-            android:id="@+id/button_cancel"
+            android:id="@+id/button_abort"
             style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Give Up"
+            android:text="@string/btn_task_abort"
             android:textSize="14sp" />
 
         <Space
@@ -131,12 +130,12 @@
             />
 
         <Button
-            android:id="@+id/button_complete"
+            android:id="@+id/button_did"
             style="@style/Widget.AppCompat.Button.Colored"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:text="Did It"
+            android:text="@string/btn_task_did"
             android:textColor="@android:color/holo_orange_light"
             android:textSize="14sp" />
 

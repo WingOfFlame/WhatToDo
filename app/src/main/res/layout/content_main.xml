@@ -27,7 +27,9 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:layout_margin="8dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
         android:background="@color/colorPrimary"
-        android:text="Get a Task"
+        android:text="Gimme a Task"
         android:textColor="@android:color/white" />
 </LinearLayout>

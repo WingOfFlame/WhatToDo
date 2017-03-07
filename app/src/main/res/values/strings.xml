@@ -1,4 +1,15 @@
 <resources>
     <string name="app_name">WhatToDo</string>
     <string name="action_settings">Settings</string>
+
+    <string name="toolbar_title">All Tasks</string>
+    <!--Bottom Sheet-->
+    <string name="btn_task_did">Did It</string>
+    <string name="btn_task_abort">Give Up</string>
+    <string name="label_working">Working on:</string>
+    <plurals name="label_times_left">
+        <item quantity="one">%d more time left</item>
+        <item quantity="other">%d more times left</item>
+    </plurals>
+    <string name="label_due">Due on: %s</string>
 </resources>
