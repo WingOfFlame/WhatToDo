@@ -5,7 +5,7 @@
     android:id="@+id/view_ongoing_task"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/holo_orange_light"
+    android:background="#FDD835"
     android:clickable="true"
     android:orientation="vertical"
     app:behavior_hideable="true"
@@ -136,7 +136,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/btn_task_did"
-            android:textColor="@android:color/holo_orange_light"
+            android:textColor="#FDD835"
             android:textSize="14sp" />
 
 
