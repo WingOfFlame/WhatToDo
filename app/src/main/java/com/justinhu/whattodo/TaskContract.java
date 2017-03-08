@@ -1,6 +1,6 @@
 package com.justinhu.whattodo;
 
-import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -12,26 +12,28 @@ import java.util.Locale;
  * Created by justinhu on 2017-02-23.
  */
 
-public class TaskContract implements Comparable,Serializable{
-    public static SimpleDateFormat dateFormatter  = new SimpleDateFormat("E, MMM dd, yyyy", Locale.US);
+class TaskContract implements Comparable,Serializable{
+    static SimpleDateFormat dateFormatter  = new SimpleDateFormat("E, MMM dd, yyyy", Locale.US);
     private int id;
-    public static String DEFAULT_DATE = "No Deadline";
+    static String DEFAULT_DATE = "No Deadline";
     public String name;
-    public TaskCategoryEnum category;
-    public int priority;
-    public boolean trackable;
-    public int repetition;
+    TaskCategoryEnum category;
+    int priority;
+    boolean trackable;
+    int countDown;
+    int countUp;
     private Date deadlineOrigin = null;
-    public String deadline;
+    String deadline;
     private boolean isSeperator;
 
 
-    public TaskContract(String name, TaskCategoryEnum category, int priority, boolean trackable, int repetition, String deadline) {
+    TaskContract(String name, TaskCategoryEnum category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
         this.name = name;
         this.category = category;
         this.priority = priority;
         this.trackable = trackable;
-        this.repetition = repetition;
+        this.countDown = countDown;
+        this.countUp = countUp;
         this.deadline = deadline;
         this.isSeperator = false;
         this.id = -1;
@@ -48,7 +50,7 @@ public class TaskContract implements Comparable,Serializable{
         this.isSeperator = true;
     }
 
-    public static TaskContract Separator(TaskCategoryEnum category){
+    static TaskContract Separator(TaskCategoryEnum category){
         return new TaskContract(category);
     }
     private void restoreDate(){
@@ -59,31 +61,47 @@ public class TaskContract implements Comparable,Serializable{
         }
     }
 
-    public void setId(int id){
+    void setId(int id){
         this.id = id;
     }
-    public int getId(){
+    int getId(){
         return this.id;
     }
-    public boolean isSeperator(){
+    boolean isSeperator(){
         return this.isSeperator;
     }
+
     @Override
-    public int compareTo(Object o) {
+    public int compareTo(@NonNull Object o) {
        TaskContract otherTask = (TaskContract) o;
-        if(this.deadlineOrigin == null){
-            this.restoreDate();
-        }
-        if(otherTask.deadlineOrigin == null){
-            otherTask.restoreDate();
+        int priorityOrder = otherTask.priority*otherTask.category.getLevel() - this.priority* this.category.getLevel();
+        if(priorityOrder !=0){
+            return priorityOrder;
         }
 
-        int dateOrder = this.deadlineOrigin.compareTo(otherTask.deadlineOrigin);
-        if (dateOrder !=0){
-            return dateOrder;
+        if(this.trackable != otherTask.trackable){
+            if(otherTask.trackable){
+                return 1;
+            }else{
+                return -1;
+            }
         }
 
-        return otherTask.priority*otherTask.category.getLevel() - this.priority* this.category.getLevel();
+        if(this.trackable){
+            if(this.deadlineOrigin == null){
+                this.restoreDate();
+            }
+            if(otherTask.deadlineOrigin == null){
+                otherTask.restoreDate();
+            }
+            int dateOrder = this.deadlineOrigin.compareTo(otherTask.deadlineOrigin);
+            if (dateOrder !=0){
+                return dateOrder;
+            }
+            return this.countDown - otherTask.countDown;
+        }else{
+            return this.countUp - otherTask.countUp;
+        }
     }
 }
 

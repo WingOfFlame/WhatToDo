@@ -8,10 +8,18 @@
     <string name="btn_task_did">Did It</string>
     <string name="btn_task_abort">Give Up</string>
     <string name="label_working">Working on:</string>
-    <plurals name="label_times_left">
+    <plurals name="label_count_down">
         <item quantity="one">%d more time left</item>
         <item quantity="other">%d more times left</item>
     </plurals>
+    <plurals name="label_count_up">
+        <item quantity="one">Have done this %d time</item>
+        <item quantity="other">Have done this %d times</item>
+    </plurals>
     <string name="label_due">Due on: %s</string>
+
+    <!--Empty View-->
+    <string name="label_no_task">No Task</string>
+    <string name="label_add_task_hint">View your to-do list here after \nadding tasks with the &#x2795; button</string>
 
 </resources>

@@ -50,7 +50,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     private RatingBar priority;
     private Switch trackableSwitch;
     private View trackableOptions;
-    private EditText repetition;
+    private EditText countDown;
     private TextView deadline;
     private DatePickerDialog deadlinePicker;
     private SimpleDateFormat dateFormatter = TaskContract.dateFormatter;
@@ -166,7 +166,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         priority = (RatingBar) rootView.findViewById(R.id.priority);
         trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
         trackableOptions = rootView.findViewById(R.id.option);
-        repetition = (EditText)  rootView.findViewById(R.id.task_count);
+        countDown = (EditText)  rootView.findViewById(R.id.task_count);
         deadline = (TextView) rootView.findViewById(R.id.task_deadline);
         categoryButton = (ImageButton) rootView.findViewById(R.id.task_category);
         takeTaskView = rootView.findViewById(R.id.takeView);
@@ -180,7 +180,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         priority.setRating(task.priority);
         trackableOptions.setVisibility( task.trackable? View.VISIBLE:View.GONE);
         trackableSwitch.setChecked(task.trackable);
-        repetition.setText(String.format (Locale.US,"%d", task.repetition));
+        countDown.setText(String.format (Locale.US,"%d", task.countDown));
         deadline.setText(task.deadline);
     }
 
@@ -189,7 +189,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         categoryButton.setEnabled(enabled);
         priority.setEnabled(enabled);
         trackableSwitch.setEnabled(enabled);
-        repetition.setEnabled(enabled);
+        countDown.setEnabled(enabled);
         deadline.setEnabled(enabled);
     }
 
@@ -244,7 +244,8 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
                     taskCategory,
                     (int)priority.getRating(),
                     trackableSwitch.isChecked(),
-                    Integer.parseInt(repetition.getText().toString()),
+                    Integer.parseInt(countDown.getText().toString()),
+                    0,
                     deadline.getText().toString()
             );
             if(task != null){

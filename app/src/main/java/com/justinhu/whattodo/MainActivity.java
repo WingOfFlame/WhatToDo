@@ -100,6 +100,9 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         }
         mTitle.setText(R.string.toolbar_title);
 
+        View emptyView=findViewById(R.id.list_empty);
+        //Empty view is set here
+        taskList.setEmptyView(emptyView);
         mAdapter = new TaskListAdapter(this);
         taskList.setAdapter(mAdapter);
         taskList.setMultiChoiceModeListener(new ModeCallback());
@@ -109,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         fab.setOnClickListener(this);
 
         randomSelect.setOnClickListener(this);
+        randomSelect.setVisibility(View.GONE);
 
         //ongoingTask.setVisibility(View.GONE);
         bottomSheetShadow.setVisibility(View.INVISIBLE);
@@ -252,7 +256,12 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
                 break;
         }
         taskPriority.setRating(acceptedTask.priority);
-        String countLabel = getResources().getQuantityString(R.plurals.label_times_left,acceptedTask.repetition,acceptedTask.repetition);
+        String countLabel;
+        if(acceptedTask.trackable){
+            countLabel= getResources().getQuantityString(R.plurals.label_count_down,acceptedTask.countDown,acceptedTask.countDown);
+        }else{
+            countLabel = getResources().getQuantityString(R.plurals.label_count_up,acceptedTask.countUp,acceptedTask.countUp);
+        }
         taskCount.setText(countLabel);
         String deadlineLabel = getResources().getString(R.string.label_due,acceptedTask.deadline);
         taskDeadline.setText(deadlineLabel);
@@ -283,9 +292,14 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         onLoaderReset is not called when destroying activity,
         so the cursor would be an closed old one
         */
-        Log.i(TAG, "onLoadFinished  ");
+        Log.i(TAG, "onLoadFinished");
         mAdapter.addRaw(cursor);
         copyData(cursor);
+        if(mDataCopy.size()>0){
+            randomSelect.setVisibility(View.VISIBLE);
+        }else{
+            randomSelect.setVisibility(View.GONE);
+        }
         oldCursor = cursor;
     }
 
@@ -310,12 +324,18 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             spawnTaskDialog(args);
         }else if (v == taskAbort || v == taskDid){
             if(v == taskDid){
-                if(currentTask.repetition>1){
-                    currentTask.repetition -=1;
-                    onTaskSaveClick(currentTask);
+                if(currentTask.trackable){
+                    if(currentTask.countDown >1){
+                        currentTask.countDown -=1;
+                        onTaskSaveClick(currentTask);
+                    }else{
+                        onTaskDeleteClick(currentTask.getId());
+                    }
                 }else{
-                    onTaskDeleteClick(currentTask.getId());
+                    currentTask.countUp+=1;
+                    onTaskSaveClick(currentTask);
                 }
+
             }
             currentTask = null;
             bottomSheetShadow.setVisibility(View.INVISIBLE);
@@ -357,13 +377,15 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
             int priority = cursor.getInt(3);
             boolean trackable = cursor.getInt(4) == 1;
-            int repeat = cursor.getInt(5);
-            String deadline = cursor.getString(6);
+            int countDown = cursor.getInt(5);
+            int countUp = cursor.getInt(6);
+            String deadline = cursor.getString(7);
             TaskContract task = new TaskContract(name,
                     category,
                     priority,
                     trackable,
-                    repeat,
+                    countDown,
+                    countUp,
                     deadline);
             task.setId(cursor.getInt(0));
             copy.add(task);

@@ -114,13 +114,15 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
             TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
             int priority = cursor.getInt(3);
             boolean trackable = cursor.getInt(4) == 1;
-            int repeat = cursor.getInt(5);
-            String deadline = cursor.getString(6);
+            int countDown = cursor.getInt(5);
+            int countUp = cursor.getInt(6);
+            String deadline = cursor.getString(7);
             TaskContract task = new TaskContract(name,
                     category,
                     priority,
                     trackable,
-                    repeat,
+                    countDown,
+                    countUp,
                     deadline);
             task.setId(cursor.getInt(0));
             group.get(category.getLevel() - 1).add(task);
@@ -192,7 +194,7 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
             deadline.setText("Due: " + task.deadline);
             if (task.trackable) {
                 repetition.setVisibility(View.VISIBLE);
-                repetition.setText("Left: " + String.valueOf(task.repetition));
+                repetition.setText("Left: " + String.valueOf(task.countDown));
             } else {
                 repetition.setVisibility(View.INVISIBLE);
             }
