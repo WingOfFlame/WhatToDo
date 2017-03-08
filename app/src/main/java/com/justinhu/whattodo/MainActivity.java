@@ -315,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         if (v == randomSelect) {
             TaskContract task = TaskSelector.selectTask(mDataCopy);
             Bundle args = new Bundle();
-            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_TAKE);
+            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
             args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
             spawnTaskDialog(args);
         } else if (v == fab) {

@@ -57,6 +57,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
     private NewTaskDialogListener listener;
     private View takeTaskView;
+    private TextView taskTaskText;
     private Button acceptButton;
     private Button declineButton;
 
@@ -70,7 +71,6 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     public static final int TASK_DIALOG_MODE_NEW = 0;
     public static final int TASK_DIALOG_MODE_VIEW = 1;
     public static final int TASK_DIALOG_MODE_EDIT = 2;
-    public static final int TASK_DIALOG_MODE_TAKE = 3;
 
     public interface NewTaskDialogListener {
         public void onTaskSaveClick(TaskContract newTask);
@@ -144,24 +144,19 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             deadline.setText(TaskContract.DEFAULT_DATE);
             trackableSwitch.setChecked(false);
         }
-
-        if(mode == TASK_DIALOG_MODE_TAKE){
-            takeTaskView.setVisibility(View.VISIBLE);
-        }else{
-            takeTaskView.setVisibility(View.GONE);
-        }
-
-        if(mode == TASK_DIALOG_MODE_NEW||mode == TASK_DIALOG_MODE_EDIT){
+        if (mode == TASK_DIALOG_MODE_NEW) {
             setViewsEnabled(true);
-        }else if(mode == TASK_DIALOG_MODE_VIEW||mode == TASK_DIALOG_MODE_TAKE){
+            takeTaskView.setVisibility(View.GONE);
+        } else {
             setViewsEnabled(false);
+            takeTaskView.setVisibility(View.VISIBLE);
 
         }
 
         return rootView;
     }
     private void findViews(View rootView){
-         toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
+        toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         taskname = (EditText) rootView.findViewById(R.id.taskname);
         priority = (RatingBar) rootView.findViewById(R.id.priority);
         trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
@@ -170,6 +165,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         deadline = (TextView) rootView.findViewById(R.id.task_deadline);
         categoryButton = (ImageButton) rootView.findViewById(R.id.task_category);
         takeTaskView = rootView.findViewById(R.id.takeView);
+        taskTaskText = (TextView) rootView.findViewById(R.id.takeTask);
         acceptButton = (Button) rootView.findViewById(R.id.accept);
         declineButton = (Button) rootView.findViewById(R.id.decline);
     }
@@ -178,7 +174,6 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         taskname.setText(task.name);
         onTaskCategoryClick(task.category);
         priority.setRating(task.priority);
-        trackableOptions.setVisibility( task.trackable? View.VISIBLE:View.GONE);
         trackableSwitch.setChecked(task.trackable);
         countDown.setText(String.format (Locale.US,"%d", task.countDown));
         deadline.setText(task.deadline);
@@ -191,6 +186,9 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         trackableSwitch.setEnabled(enabled);
         countDown.setEnabled(enabled);
         deadline.setEnabled(enabled);
+        taskTaskText.setEnabled(!enabled);
+        declineButton.setEnabled(!enabled);
+        acceptButton.setEnabled(!enabled);
     }
 
     /** The system calls this only when creating the layout in a dialog. */
@@ -228,10 +226,6 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             editAction.setVisible(false);
             deleteAction.setVisible(true);
 
-        }else if(mode == TASK_DIALOG_MODE_TAKE){
-            saveAction.setVisible(false);
-            editAction.setVisible(false);
-            deleteAction.setVisible(false);
         }
     }
 
@@ -248,22 +242,39 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
                     0,
                     deadline.getText().toString()
             );
-            if(task != null){
-                newTask.setId(task.getId());
+
+            if (mode == TASK_DIALOG_MODE_NEW) {
+                listener.onTaskSaveClick(newTask);
+                dismiss();
+                return true;
             }
+
+            if (task == null) {
+                Log.e(TAG, "Null task to save at mode:" + mode);
+                return false;
+            }
+
+            newTask.setId(task.getId());
+            newTask.countUp = task.countUp;
             listener.onTaskSaveClick(newTask);
-            dismiss();
+            task = newTask;
+
+            mode = TASK_DIALOG_MODE_VIEW;
+            setViewsEnabled(false);
+
+            onPrepareOptionsMenu(mMenu);
+
             return true;
         } else if (id == android.R.id.home) {
             // handle close button click here
-            if (mode == TASK_DIALOG_MODE_EDIT){
-                mode = TASK_DIALOG_MODE_VIEW;
-                populateViews();
-                setViewsEnabled(false);
-                onPrepareOptionsMenu(mMenu);
-            }else{
+            if (mode != TASK_DIALOG_MODE_EDIT) {
                 dismiss();
+                return true;
             }
+            mode = TASK_DIALOG_MODE_VIEW;
+            setViewsEnabled(false);
+            onPrepareOptionsMenu(mMenu);
+
             return true;
         }else if (id == R.id.action_edit){
             mode = TASK_DIALOG_MODE_EDIT;
@@ -273,6 +284,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         }else if(id == R.id.action_delete){
             listener.onTaskDeleteClick(task.getId());
             dismiss();
+            return true;
         }
 
         return super.onOptionsItemSelected(item);

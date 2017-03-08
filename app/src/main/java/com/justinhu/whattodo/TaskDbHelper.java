@@ -23,7 +23,7 @@ class TaskDbHelper extends SQLiteOpenHelper {
     private static final String TAG = "TaskDbHelper";
     private static TaskDbHelper sInstance;
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static final String DATABASE_NAME = "Task.db";
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TaskEntry.TABLE_NAME + " (" +
