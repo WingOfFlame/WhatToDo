@@ -40,8 +40,10 @@ import java.util.Locale;
 public class TaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
 
     private static final String TAG = "TaskDialogFragment";
-    private int mode;
 
+    private int mode;
+    private boolean isWorking;
+    private boolean otherWorking;
     private TaskContract task;
 
     private Toolbar toolbar;
@@ -60,22 +62,36 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     private TextView taskTaskText;
     private Button acceptButton;
     private Button declineButton;
+    private View taskOngoingView;
+    private Button taskAbortButton;
+    private Button taskDidButton;
 
     private Menu mMenu;
     private MenuItem saveAction;
     private MenuItem editAction;
     private MenuItem deleteAction;
 
+    public static final String ARGS_KEY_THIS_WORKING = "THIS_WORKING";
+    public static final String ARGS_KEY_OTHER_WORKING = "OTHER_WORKING";
     public static final String ARGS_KEY_MODE = "MODE";
     public static final String ARGS_KEY_TASK = "TASK";
     public static final int TASK_DIALOG_MODE_NEW = 0;
     public static final int TASK_DIALOG_MODE_VIEW = 1;
     public static final int TASK_DIALOG_MODE_EDIT = 2;
 
-    public interface NewTaskDialogListener {
-        public void onTaskSaveClick(TaskContract newTask);
-        public void onTaskDeleteClick(int id);
-        public void onTaskAcceptClick(TaskContract acceptedTask);
+
+    //public static final int TASK_DIALOG_MODE_TAKE = 3;
+
+    interface NewTaskDialogListener {
+        void onTaskSaveClick(TaskContract newTask);
+
+        void onTaskDeleteClick(int id);
+
+        void onTaskAcceptClick(TaskContract acceptedTask);
+
+        void onTaskDidClick(int id);
+
+        void onTaskAbortClick(int id);
     }
 
     @Override
@@ -85,7 +101,8 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         if(mode != TASK_DIALOG_MODE_NEW){
             task = (TaskContract) args.getSerializable(ARGS_KEY_TASK);
         }
-
+        this.isWorking = args.getBoolean(ARGS_KEY_THIS_WORKING, false);
+        this.otherWorking = args.getBoolean(ARGS_KEY_OTHER_WORKING, false);
     }
 
     /** The system calls this to get the DialogFragment's layout, regardless
@@ -105,7 +122,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         if (actionBar != null) {
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setHomeButtonEnabled(true);
-            actionBar.setHomeAsUpIndicator(android.R.drawable.ic_menu_close_clear_cancel);
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
         }
         setHasOptionsMenu(true);
 
@@ -123,6 +140,8 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         categoryButton.setOnClickListener(this);
         acceptButton.setOnClickListener(this);
         declineButton.setOnClickListener(this);
+        taskDidButton.setOnClickListener(this);
+        taskAbortButton.setOnClickListener(this);
 
         Calendar newCalendar = Calendar.getInstance();
         deadlinePicker = new DatePickerDialog(getActivity(), new DatePickerDialog.OnDateSetListener() {
@@ -144,13 +163,23 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             deadline.setText(TaskContract.DEFAULT_DATE);
             trackableSwitch.setChecked(false);
         }
+
         if (mode == TASK_DIALOG_MODE_NEW) {
             setViewsEnabled(true);
             takeTaskView.setVisibility(View.GONE);
+            taskOngoingView.setVisibility(View.GONE);
         } else {
             setViewsEnabled(false);
-            takeTaskView.setVisibility(View.VISIBLE);
-
+            if (otherWorking) {
+                takeTaskView.setVisibility(View.GONE);
+                taskOngoingView.setVisibility(View.GONE);
+            } else if (isWorking) {
+                taskOngoingView.setVisibility(View.VISIBLE);
+                takeTaskView.setVisibility(View.GONE);
+            } else {
+                taskOngoingView.setVisibility(View.GONE);
+                takeTaskView.setVisibility(View.VISIBLE);
+            }
         }
 
         return rootView;
@@ -168,6 +197,9 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         taskTaskText = (TextView) rootView.findViewById(R.id.takeTask);
         acceptButton = (Button) rootView.findViewById(R.id.accept);
         declineButton = (Button) rootView.findViewById(R.id.decline);
+        taskOngoingView = rootView.findViewById(R.id.task_ongoing);
+        taskAbortButton = (Button) rootView.findViewById(R.id.button_abort);
+        taskDidButton = (Button) rootView.findViewById(R.id.button_did);
     }
 
     private void populateViews() {
@@ -189,6 +221,8 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         taskTaskText.setEnabled(!enabled);
         declineButton.setEnabled(!enabled);
         acceptButton.setEnabled(!enabled);
+        taskDidButton.setEnabled(!enabled);
+        taskAbortButton.setEnabled(!enabled);
     }
 
     /** The system calls this only when creating the layout in a dialog. */
@@ -302,6 +336,12 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             dismiss();
         }else if(v == acceptButton){
             listener.onTaskAcceptClick(task);
+            dismiss();
+        } else if (v == taskAbortButton) {
+            listener.onTaskAbortClick(task.getId());
+            dismiss();
+        } else if (v == taskDidButton) {
+            listener.onTaskDidClick(task.getId());
             dismiss();
         }
     }

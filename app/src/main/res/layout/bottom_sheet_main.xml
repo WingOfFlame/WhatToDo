@@ -5,7 +5,7 @@
     android:id="@+id/view_ongoing_task"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FDD835"
+    android:background="@color/bottomYellow"
     android:clickable="true"
     android:orientation="vertical"
     app:behavior_hideable="true"
@@ -117,7 +117,8 @@
 
         <Button
             android:id="@+id/button_abort"
-            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:theme="@style/AppTheme.ButtonOverlay.yellow"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -136,7 +137,7 @@
             android:layout_weight="1"
             android:layout_height="wrap_content"
             android:text="@string/btn_task_did"
-            android:textColor="#FDD835"
+            android:textColor="@color/bottomYellow"
             android:textSize="14sp" />
 
 

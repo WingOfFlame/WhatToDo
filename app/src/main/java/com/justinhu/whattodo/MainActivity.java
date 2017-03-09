@@ -145,9 +145,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         String currentTaskStr = storage.getString(CURRENT_TASK, null);
         if(currentTaskStr != null){
             Gson g = new Gson();
-            TaskContract task = g.fromJson(currentTaskStr, TaskContract.class);
-            currentTask = task;
-            updateBottomSheet(task);
+            currentTask = g.fromJson(currentTaskStr, TaskContract.class);
+            updateBottomSheet();
         }
 
     }
@@ -207,6 +206,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     @Override
     public void onTaskSaveClick(TaskContract newTask) {
+        if (currentTask != null && newTask.getId() == currentTask.getId()) {
+            currentTask = newTask;
+            updateBottomSheet();
+        }
         mDbHelper.saveNewTask(newTask);
         getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
     }
@@ -219,9 +222,9 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     @Override
     public void onTaskAcceptClick(TaskContract acceptedTask) {
+        randomSelect.setVisibility(View.INVISIBLE);
         currentTask = acceptedTask;
-
-        updateBottomSheet(acceptedTask);
+        updateBottomSheet();
 
         SharedPreferences.Editor prefsEditor = storage.edit();
         Gson g = new Gson();
@@ -230,9 +233,23 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         prefsEditor.apply();
     }
 
-    private void updateBottomSheet(TaskContract acceptedTask) {
-        taskName.setText(acceptedTask.name);
-        switch (acceptedTask.category){
+    @Override
+    public void onTaskDidClick(int id) {
+        onTaskDid();
+        clearCurrentTask();
+    }
+
+    @Override
+    public void onTaskAbortClick(int id) {
+        clearCurrentTask();
+    }
+
+    private void updateBottomSheet() {
+        if (currentTask == null) {
+            Log.e(TAG, "Empty currentTask, but updateBottomSheet called");
+        }
+        taskName.setText(currentTask.name);
+        switch (currentTask.category) {
             case DEFAULT:
                 taskCategory.setImageResource(R.drawable.ic_default_grey_500_24dp);
                 break;
@@ -255,15 +272,15 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
                 taskCategory.setImageResource(R.drawable.ic_default_grey_500_24dp);
                 break;
         }
-        taskPriority.setRating(acceptedTask.priority);
+        taskPriority.setRating(currentTask.priority);
         String countLabel;
-        if(acceptedTask.trackable){
-            countLabel= getResources().getQuantityString(R.plurals.label_count_down,acceptedTask.countDown,acceptedTask.countDown);
+        if (currentTask.trackable) {
+            countLabel = getResources().getQuantityString(R.plurals.label_count_down, currentTask.countDown, currentTask.countDown);
         }else{
-            countLabel = getResources().getQuantityString(R.plurals.label_count_up,acceptedTask.countUp,acceptedTask.countUp);
+            countLabel = getResources().getQuantityString(R.plurals.label_count_up, currentTask.countUp, currentTask.countUp);
         }
         taskCount.setText(countLabel);
-        String deadlineLabel = getResources().getString(R.string.label_due,acceptedTask.deadline);
+        String deadlineLabel = getResources().getString(R.string.label_due, currentTask.deadline);
         taskDeadline.setText(deadlineLabel);
 
 
@@ -324,37 +341,51 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             spawnTaskDialog(args);
         }else if (v == taskAbort || v == taskDid){
             if(v == taskDid){
-                if(currentTask.trackable){
-                    if(currentTask.countDown >1){
-                        currentTask.countDown -=1;
-                        onTaskSaveClick(currentTask);
-                    }else{
-                        onTaskDeleteClick(currentTask.getId());
-                    }
-                }else{
-                    currentTask.countUp+=1;
-                    onTaskSaveClick(currentTask);
-                }
-
+                onTaskDid();
             }
-            currentTask = null;
-            bottomSheetShadow.setVisibility(View.INVISIBLE);
-            bottomSheetBehavior.setHideable(true);
-            bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+            clearCurrentTask();
+        }
+    }
 
-            SharedPreferences.Editor prefsEditor = storage.edit();
-            prefsEditor.remove(CURRENT_TASK);
-            prefsEditor.apply();
+    private void clearCurrentTask() {
+        currentTask = null;
+        bottomSheetShadow.setVisibility(View.INVISIBLE);
+        bottomSheetBehavior.setHideable(true);
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        randomSelect.setVisibility(View.VISIBLE);
+
+        SharedPreferences.Editor prefsEditor = storage.edit();
+        prefsEditor.remove(CURRENT_TASK);
+        prefsEditor.apply();
+    }
+
+    private void onTaskDid() {
+        if (currentTask.trackable) {
+            if (currentTask.countDown > 1) {
+                currentTask.countDown -= 1;
+                onTaskSaveClick(currentTask);
+            } else {
+                onTaskDeleteClick(currentTask.getId());
+            }
+        } else {
+            currentTask.countUp += 1;
+            onTaskSaveClick(currentTask);
         }
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Bundle args = new Bundle();
+        TaskContract selected = (TaskContract) parent.getAdapter().getItem(position);
+        if (currentTask != null) {
+            if (currentTask.getId() == selected.getId()) {
+                args.putBoolean(TaskDialogFragment.ARGS_KEY_THIS_WORKING, true);
+            } else {
+                args.putBoolean(TaskDialogFragment.ARGS_KEY_OTHER_WORKING, true);
+            }
+        }
         args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
-        args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, (TaskContract) parent.getAdapter().
-                getItem(position)
-        );
+        args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, selected);
         spawnTaskDialog(args);
     }
 

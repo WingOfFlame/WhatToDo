@@ -18,16 +18,29 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 
-    <style name="ButtonOverlay" parent="ThemeOverlay.AppCompat.Light">
+    <style name="AppTheme.ButtonOverlay" parent="ThemeOverlay.AppCompat.Light">
         <item name="colorButtonNormal">@color/btnDisabled</item>
         <item name="colorAccent">@color/colorPrimary</item>
     </style>
 
-    <style name="ButtonOverlay.positive" parent="ThemeOverlay.AppCompat.Light">
+    <style name="AppTheme.ButtonOverlay.positive" parent="ThemeOverlay.AppCompat.Light">
         <item name="colorAccent">@color/btnPositive</item>
     </style>
 
-    <style name="ButtonOverlay.negative" parent="ThemeOverlay.AppCompat.Light">
+    <style name="AppTheme.ButtonOverlay.negative" parent="ThemeOverlay.AppCompat.Light">
         <item name="colorAccent">@color/btnNegative</item>
+    </style>
+
+    <style name="AppTheme.ButtonOverlay.yellow" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorAccent">@color/bottomYellow</item>
+        <item name="android:textColorPrimaryInverse">@color/colorAccent
+        </item>
+    </style>
+
+    <style name="AppTheme.ButtonOverlay.white" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorAccent">@android:color/white</item>
+        <item name="android:textColorPrimaryInverse">@drawable/button_text_color
+        </item>
+
     </style>
 </resources>
