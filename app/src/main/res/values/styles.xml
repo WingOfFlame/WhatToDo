@@ -32,9 +32,8 @@
     </style>
 
     <style name="AppTheme.ButtonOverlay.yellow" parent="ThemeOverlay.AppCompat.Light">
-        <item name="colorAccent">@color/bottomYellow</item>
-        <item name="android:textColorPrimaryInverse">@color/colorAccent
-        </item>
+        <item name="colorAccent">#FFD740</item>
+        =
     </style>
 
     <style name="AppTheme.ButtonOverlay.white" parent="ThemeOverlay.AppCompat.Light">

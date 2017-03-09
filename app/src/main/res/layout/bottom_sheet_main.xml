@@ -5,11 +5,11 @@
     android:id="@+id/view_ongoing_task"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/bottomYellow"
+    android:background="@drawable/shape_gradient_bottom_sheet"
     android:clickable="true"
     android:orientation="vertical"
     app:behavior_hideable="true"
-    app:behavior_peekHeight="80dp"
+    app:behavior_peekHeight="64dp"
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior"
     tools:showIn="@layout/activity_main">
 
@@ -17,39 +17,38 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
+        android:orientation="vertical"
         >
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="64dp"
             android:orientation="vertical">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
+                android:paddingBottom="4dp"
                 android:paddingTop="8dp"
                 android:text="@string/label_working"
                 android:textColor="@android:color/black" />
+
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:orientation="horizontal"
-                >
+                android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/task_category"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:contentDescription="@null"
                     android:tint="@color/colorPrimaryDark"
-                    app:srcCompat="@drawable/ic_default_grey_500_24dp"
-                    android:contentDescription="@null" />
+                    app:srcCompat="@drawable/ic_default_grey_500_24dp" />
 
                 <Space
                     android:layout_width="8dp"
@@ -69,18 +68,21 @@
             </LinearLayout>
         </LinearLayout>
 
+
         <RatingBar
             android:id="@+id/task_priority"
             style="@style/Widget.AppCompat.RatingBar.Small"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:paddingTop="4dp"
             android:isIndicator="true"
             android:numStars="5"
             android:rating="3"
             android:stepSize="0.5" />
+
         <Space
-            android:layout_height="4dp"
-            android:layout_width="match_parent" />
+            android:layout_width="match_parent"
+            android:layout_height="4dp" />
 
 
         <TextView
@@ -91,8 +93,8 @@
             android:textSize="16sp" />
 
         <Space
-            android:layout_height="4dp"
-            android:layout_width="match_parent" />
+            android:layout_width="match_parent"
+            android:layout_height="4dp" />
 
         <TextView
             android:id="@+id/task_deadline"
@@ -102,46 +104,42 @@
             android:text="@string/label_due"
             android:textSize="16sp" />
 
-        <Space
-            android:layout_height="8dp"
-            android:layout_width="match_parent" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp">
-
-
-        <Button
-            android:id="@+id/button_abort"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:theme="@style/AppTheme.ButtonOverlay.yellow"
-            android:layout_width="0dp"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/btn_task_abort"
-            android:textSize="14sp" />
-
-        <Space
-            android:layout_width="32dp"
-            android:layout_height="wrap_content"
-            />
-
-        <Button
-            android:id="@+id/button_did"
-            style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:text="@string/btn_task_did"
-            android:textColor="@color/bottomYellow"
-            android:textSize="14sp" />
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingBottom="4dp"
+            android:paddingEnd="32dp"
+            android:paddingStart="32dp">
 
 
-    </LinearLayout>
+            <Button
+                android:id="@+id/button_abort"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/btn_task_abort"
+                android:textSize="14sp"
+                android:theme="@style/AppTheme.ButtonOverlay.white" />
+
+            <Space
+                android:layout_width="32dp"
+                android:layout_height="wrap_content" />
+
+            <Button
+                android:id="@+id/button_did"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/btn_task_did"
+                android:textSize="14sp" />
+
+
+        </LinearLayout>
 
     </LinearLayout>
 
