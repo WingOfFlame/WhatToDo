@@ -280,7 +280,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             countLabel = getResources().getQuantityString(R.plurals.label_count_up, currentTask.countUp, currentTask.countUp);
         }
         taskCount.setText(countLabel);
-        String deadlineLabel = getResources().getString(R.string.label_due, currentTask.deadline);
+        String deadlineLabel = getResources().getString(R.string.label_due, currentTask.getDeadline());
         taskDeadline.setText(deadlineLabel);
 
 
@@ -330,11 +330,16 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     @Override
     public void onClick(View v) {
         if (v == randomSelect) {
-            Task task = TaskSelector.selectTask(mDataCopy);
-            Bundle args = new Bundle();
-            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
-            args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
-            spawnTaskDialog(args);
+            try {
+                Task task = TaskSelector.selectTask(mDataCopy);
+                Bundle args = new Bundle();
+                args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
+                args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
+                spawnTaskDialog(args);
+            } catch (IndexOutOfBoundsException e) {
+                Toast.makeText(MainActivity.this, "No valid task to be selected", Toast.LENGTH_LONG).show();
+            }
+
         } else if (v == fab) {
             Bundle args = new Bundle();
             args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_NEW);
@@ -368,7 +373,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
                 onTaskDeleteClick(currentTask.getId());
             }
         } else {
-            currentTask.countUp += 1;
+            currentTask.incrementCount();
             onTaskSaveClick(currentTask);
         }
     }

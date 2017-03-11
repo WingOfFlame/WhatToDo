@@ -24,7 +24,7 @@
     </style>
 
     <style name="AppTheme.ButtonOverlay.positive" parent="ThemeOverlay.AppCompat.Light">
-        <item name="colorAccent">@color/btnPositive</item>
+        <item name="colorAccent">@color/btn_Positive</item>
     </style>
 
     <style name="AppTheme.ButtonOverlay.negative" parent="ThemeOverlay.AppCompat.Light">

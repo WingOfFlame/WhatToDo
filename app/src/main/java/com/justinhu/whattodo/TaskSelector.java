@@ -1,7 +1,9 @@
 package com.justinhu.whattodo;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -15,16 +17,24 @@ public class TaskSelector {
     public static Task selectTask(List<Task> taskList) {
         Collections.sort(taskList);
         ArrayList<Task> pending = new ArrayList<>();
-        Task first = taskList.get(0);
+        Calendar newDate = Calendar.getInstance();
+        newDate.add(Calendar.HOUR, -30);
+
+        Date currentTime = newDate.getTime();
+        int index = 0;
+        while (taskList.get(index).getDeadlineOrigin().compareTo(currentTime) < 0) {
+            index++;
+        }
+        Task first = taskList.get(index++);
         pending.add(first);
-        for (int i = 1; i<taskList.size(); i++){
+        for (int i = index; i < taskList.size(); i++) {
             Task current = taskList.get(i);
             if(current.compareTo(first) == 0){
                pending.add(current);
             }
         }
-        int index = randomGenerator.nextInt(pending.size());
-        return pending.get(index);
+        int result = randomGenerator.nextInt(pending.size());
+        return pending.get(result);
     }
 
 }

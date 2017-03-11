@@ -2,6 +2,7 @@ package com.justinhu.whattodo;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +11,9 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -21,6 +24,7 @@ import java.util.List;
 
 public class TaskListAdapter extends ArrayAdapter<Task> {
     private Context mContext;
+    private static Date currentTime;
 
     // View Type for Separators
     private static final int ITEM_VIEW_TYPE_SEPARATOR = 0;
@@ -90,6 +94,7 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
                 ((TaskItemViewHolder) holder).deadline = (TextView) convertView.findViewById(R.id.task_deadline);
                 ((TaskItemViewHolder) holder).repetition = (TextView) convertView.findViewById(R.id.task_count);
             }
+            holder.self = convertView;
             convertView.setTag(holder);
         }
         else {
@@ -97,13 +102,17 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         }
 
 
-        holder.populateView(task);
+        holder.populateView(this.mContext, task);
 
 
         return convertView;
     }
 
     public void addRaw(Cursor cursor) {
+        Calendar newDate = Calendar.getInstance();
+        newDate.add(Calendar.HOUR, -30);
+        currentTime = newDate.getTime();
+
         List<List<Task>> group = new ArrayList<List<Task>>(6);
         for (int i =0; i <6; i++){
             group.add(new ArrayList<Task>());
@@ -143,9 +152,10 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
 
 
     static class TaskViewHolder{
+        View self;
         TextView name;
 
-        public void populateView(Task task) {
+        public void populateView(Context mContext, Task task) {
             name.setText(task.name);
         };
     }
@@ -153,8 +163,8 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
     private static class TaskSeparatorViewHolder extends TaskViewHolder{
 
         @Override
-        public void populateView(Task task) {
-            super.populateView(task);
+        public void populateView(Context mContext, Task task) {
+            super.populateView(mContext, task);
             switch (task.category) {
                     case DEFAULT:
 
@@ -188,15 +198,23 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         TextView repetition;
 
         @Override
-        public void populateView(Task task) {
-            super.populateView(task);
+        public void populateView(Context mContext, Task task) {
+            super.populateView(mContext, task);
             priority.setRating(task.priority);
-            deadline.setText("Due: " + task.deadline);
+
             if (task.trackable) {
                 repetition.setVisibility(View.VISIBLE);
                 repetition.setText("Left: " + String.valueOf(task.countDown));
             } else {
                 repetition.setVisibility(View.INVISIBLE);
+            }
+
+            if (task.getDeadlineOrigin().compareTo(currentTime) < 0) {
+                self.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWarn));
+                deadline.setText(R.string.label_overdue);
+            } else {
+                String deadlineLabel = mContext.getResources().getString(R.string.label_due, task.getDeadline());
+                deadline.setText(deadlineLabel);
             }
         }
     }

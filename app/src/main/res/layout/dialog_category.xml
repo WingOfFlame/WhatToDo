@@ -10,17 +10,6 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:text="Default"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/button_default"
-            android:drawableTop="@drawable/ic_default_grey_500_24dp"
-            android:background="@android:color/transparent"
-            android:textAllCaps="false"
-            android:layout_weight="1"
-            android:layout_margin="8dp" />
-
-        <Button
             android:text="Work"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -37,6 +26,17 @@
             android:layout_height="wrap_content"
             android:id="@+id/button_school"
             android:drawableTop="@drawable/ic_school_orange_500_24dp"
+            android:background="@android:color/transparent"
+            android:textAllCaps="false"
+            android:layout_weight="1"
+            android:layout_margin="8dp" />
+
+        <Button
+            android:text="Default"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/button_default"
+            android:drawableTop="@drawable/ic_default_grey_500_24dp"
             android:background="@android:color/transparent"
             android:textAllCaps="false"
             android:layout_weight="1"

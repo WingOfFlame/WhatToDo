@@ -227,9 +227,9 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         onTaskCategoryClick(task.category);
         priority.setRating(task.priority);
         trackableSwitch.setChecked(task.trackable);
-        deadlineSwitch.setChecked(task.deadline != Task.DEFAULT_DATE);
+        deadlineSwitch.setChecked(task.getDeadline() != Task.DEFAULT_DATE);
         countDown.setText(String.format (Locale.US,"%d", task.countDown));
-        deadline.setText(task.deadline);
+        deadline.setText(task.getDeadline());
     }
 
     private void setViewsEnabled(boolean enabled) {

@@ -1,7 +1,6 @@
 https://guides.codepath.com/android/Using-DialogFragment
 
 TODO:
-- time out
 - input validation
 - sub task
 - notification for current task

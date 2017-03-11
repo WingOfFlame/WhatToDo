@@ -14,20 +14,25 @@ import java.util.Locale;
 
 class Task implements Comparable, Serializable {
     static SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-    private int id;
     static String DEFAULT_DATE = "No Deadline";
-    public String name;
+    static String DEFAULT_TITLE = "(No Name)";
+
+    private int id;
+    String name;
     TaskCategoryEnum category;
     int priority;
     boolean trackable;
     int countDown;
     int countUp;
     private Date deadlineOrigin = null;
-    String deadline;
+    private String deadline;
     private boolean isSeperator;
 
 
     Task(String name, TaskCategoryEnum category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
+        if (name.equals("")) {
+            name = DEFAULT_TITLE;
+        }
         this.name = name;
         this.category = category;
         this.priority = priority;
@@ -37,6 +42,7 @@ class Task implements Comparable, Serializable {
         this.deadline = deadline;
         this.isSeperator = false;
         this.id = -1;
+        restoreDate();
     }
 
     @Override
@@ -53,6 +59,11 @@ class Task implements Comparable, Serializable {
     static Task Separator(TaskCategoryEnum category) {
         return new Task(category);
     }
+
+    public Date getDeadlineOrigin() {
+        return deadlineOrigin;
+    }
+
     private void restoreDate(){
         try{
             this.deadlineOrigin = dateFormatter.parse(this.deadline);
@@ -74,21 +85,24 @@ class Task implements Comparable, Serializable {
     @Override
     public int compareTo(@NonNull Object o) {
         Task otherTask = (Task) o;
-        int priorityOrder = otherTask.priority*otherTask.category.getLevel() - this.priority* this.category.getLevel();
-        if(priorityOrder !=0){
-            return priorityOrder;
-        }
-
-        if (this.deadlineOrigin == null) {
-            this.restoreDate();
-        }
-        if (otherTask.deadlineOrigin == null) {
-            otherTask.restoreDate();
-        }
 
         int dateOrder = this.deadlineOrigin.compareTo(otherTask.deadlineOrigin);
-        return dateOrder;
+        if (dateOrder != 0) {
+            return dateOrder;
+        }
 
+        int priorityOrder = otherTask.priority * otherTask.category.getLevel() - this.priority * this.category.getLevel();
+
+        return priorityOrder;
+
+    }
+
+    public String getDeadline() {
+        return deadline;
+    }
+
+    public void incrementCount() {
+        this.countUp += 1;
     }
 }
 

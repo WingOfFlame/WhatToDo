@@ -83,7 +83,7 @@ class TaskDbHelper extends SQLiteOpenHelper {
         values.put(TaskEntry.COLUMN_NAME_TRACKABLE, newTask.trackable ? 1 : 0);
         values.put(TaskEntry.COLUMN_NAME_COUNTDOWN, newTask.countDown);
         values.put(TaskEntry.COLUMN_NAME_COUNTUP, newTask.countUp);
-        values.put(TaskEntry.COLUMN_NAME_DEADLINE, newTask.deadline);
+        values.put(TaskEntry.COLUMN_NAME_DEADLINE, newTask.getDeadline());
 
         if(newTask.getId() > 0){
             mDb.update(TaskEntry.TABLE_NAME, values,"_id = ? ", new String[] { Integer.toString(newTask.getId()) } );

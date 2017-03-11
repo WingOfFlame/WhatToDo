@@ -4,7 +4,9 @@
 
     <string name="toolbar_title">All Tasks</string>
     <string name="btn_get_task">What to do?</string>
-    <!--Bottom Sheet-->
+
+    <!--Task Listview & Bottom Sheet-->
+    <string name="label_overdue">Overdue</string>
     <string name="btn_task_did">Did It</string>
     <string name="btn_task_abort">Give Up</string>
     <string name="label_working">Working on:</string>
