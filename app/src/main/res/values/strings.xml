@@ -25,9 +25,11 @@
 
     <string name="edit_task_name">Task Name</string>
     <string name="label_task_priority">Priority</string>
+    <string name="label_deadline">Deadline</string>
     <string name="label_task_trackable">Trackable</string>
     <string name="btn_start_task">Start</string>
     <string name="btn_decline_task">Later</string>
     <string name="label_take_task_hint">Start working on this task?</string>
+
 
 </resources>

@@ -12,8 +12,8 @@ import java.util.Locale;
  * Created by justinhu on 2017-02-23.
  */
 
-class TaskContract implements Comparable,Serializable{
-    static SimpleDateFormat dateFormatter  = new SimpleDateFormat("E, MMM dd, yyyy", Locale.US);
+class Task implements Comparable, Serializable {
+    static SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
     private int id;
     static String DEFAULT_DATE = "No Deadline";
     public String name;
@@ -27,7 +27,7 @@ class TaskContract implements Comparable,Serializable{
     private boolean isSeperator;
 
 
-    TaskContract(String name, TaskCategoryEnum category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
+    Task(String name, TaskCategoryEnum category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
         this.name = name;
         this.category = category;
         this.priority = priority;
@@ -44,14 +44,14 @@ class TaskContract implements Comparable,Serializable{
         return "Name:"+this.name;
     }
 
-    private TaskContract(TaskCategoryEnum category){
+    private Task(TaskCategoryEnum category) {
         this.name = category.name();
         this.category = category;
         this.isSeperator = true;
     }
 
-    static TaskContract Separator(TaskCategoryEnum category){
-        return new TaskContract(category);
+    static Task Separator(TaskCategoryEnum category) {
+        return new Task(category);
     }
     private void restoreDate(){
         try{
@@ -73,35 +73,22 @@ class TaskContract implements Comparable,Serializable{
 
     @Override
     public int compareTo(@NonNull Object o) {
-       TaskContract otherTask = (TaskContract) o;
+        Task otherTask = (Task) o;
         int priorityOrder = otherTask.priority*otherTask.category.getLevel() - this.priority* this.category.getLevel();
         if(priorityOrder !=0){
             return priorityOrder;
         }
 
-        if(this.trackable != otherTask.trackable){
-            if(otherTask.trackable){
-                return 1;
-            }else{
-                return -1;
-            }
+        if (this.deadlineOrigin == null) {
+            this.restoreDate();
+        }
+        if (otherTask.deadlineOrigin == null) {
+            otherTask.restoreDate();
         }
 
-        if(this.trackable){
-            if(this.deadlineOrigin == null){
-                this.restoreDate();
-            }
-            if(otherTask.deadlineOrigin == null){
-                otherTask.restoreDate();
-            }
-            int dateOrder = this.deadlineOrigin.compareTo(otherTask.deadlineOrigin);
-            if (dateOrder !=0){
-                return dateOrder;
-            }
-            return this.countDown - otherTask.countDown;
-        }else{
-            return this.countUp - otherTask.countUp;
-        }
+        int dateOrder = this.deadlineOrigin.compareTo(otherTask.deadlineOrigin);
+        return dateOrder;
+
     }
 }
 

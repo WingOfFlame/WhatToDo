@@ -1,8 +1,8 @@
 https://guides.codepath.com/android/Using-DialogFragment
 
 TODO:
-- change tracable tp unlimited
 - time out
+- input validation
 - sub task
 - notification for current task
 - configure category order and add user defined category

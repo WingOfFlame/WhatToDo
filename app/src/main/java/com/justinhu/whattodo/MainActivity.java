@@ -38,7 +38,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener {
     public static final String CURRENT_TASK = "currentTask";
-    List<TaskContract> mDataCopy;
+    List<Task> mDataCopy;
     TaskDbHelper mDbHelper;
     private Cursor oldCursor;
 
@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     Button randomSelect;
 
-    TaskContract currentTask = null;
+    Task currentTask = null;
 
     private FragmentManager fragmentManager;
     private FloatingActionButton fab;
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         String currentTaskStr = storage.getString(CURRENT_TASK, null);
         if(currentTaskStr != null){
             Gson g = new Gson();
-            currentTask = g.fromJson(currentTaskStr, TaskContract.class);
+            currentTask = g.fromJson(currentTaskStr, Task.class);
             updateBottomSheet();
         }
 
@@ -205,7 +205,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     }
 
     @Override
-    public void onTaskSaveClick(TaskContract newTask) {
+    public void onTaskSaveClick(Task newTask) {
         if (currentTask != null && newTask.getId() == currentTask.getId()) {
             currentTask = newTask;
             updateBottomSheet();
@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     }
 
     @Override
-    public void onTaskAcceptClick(TaskContract acceptedTask) {
+    public void onTaskAcceptClick(Task acceptedTask) {
         randomSelect.setVisibility(View.INVISIBLE);
         currentTask = acceptedTask;
         updateBottomSheet();
@@ -330,7 +330,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     @Override
     public void onClick(View v) {
         if (v == randomSelect) {
-            TaskContract task = TaskSelector.selectTask(mDataCopy);
+            Task task = TaskSelector.selectTask(mDataCopy);
             Bundle args = new Bundle();
             args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
             args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
@@ -376,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Bundle args = new Bundle();
-        TaskContract selected = (TaskContract) parent.getAdapter().getItem(position);
+        Task selected = (Task) parent.getAdapter().getItem(position);
         if (currentTask != null) {
             if (currentTask.getId() == selected.getId()) {
                 args.putBoolean(TaskDialogFragment.ARGS_KEY_THIS_WORKING, true);
@@ -402,7 +402,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     private void copyData(Cursor cursor) {
         cursor.moveToPosition(-1);
-        List<TaskContract> copy = new ArrayList<>();
+        List<Task> copy = new ArrayList<>();
         while (cursor.moveToNext()) {
             String name = cursor.getString(1);
             TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
@@ -411,7 +411,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             int countDown = cursor.getInt(5);
             int countUp = cursor.getInt(6);
             String deadline = cursor.getString(7);
-            TaskContract task = new TaskContract(name,
+            Task task = new Task(name,
                     category,
                     priority,
                     trackable,
@@ -468,7 +468,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
                     if (checkedItems != null) {
                         for (int i = 0; i < checkedItems.size(); i++) {
                             if (checkedItems.valueAt(i)) {
-                                TaskContract selecteditem = mAdapter.getItem(checkedItems.keyAt(i));
+                                Task selecteditem = mAdapter.getItem(checkedItems.keyAt(i));
                                 if(selecteditem != null){
                                     // Remove selected items following the
                                     toDelete.add(String.valueOf(selecteditem.getId()));

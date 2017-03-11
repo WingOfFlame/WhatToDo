@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingBottom="4dp"
+    android:paddingEnd="32dp"
+    android:paddingStart="32dp"
+    tools:showIn="@layout/bottom_sheet_main">
+
+
+    <Button
+        android:id="@+id/button_abort"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/btn_task_abort"
+        android:textSize="14sp"
+        android:theme="@style/AppTheme.ButtonOverlay.white" />
+
+    <Space
+        android:layout_width="32dp"
+        android:layout_height="wrap_content" />
+
+    <Button
+        android:id="@+id/button_did"
+        style="@style/Widget.AppCompat.Button.Colored"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="@string/btn_task_did"
+        android:textSize="14sp" />
+
+
+</LinearLayout>

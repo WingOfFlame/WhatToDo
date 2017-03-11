@@ -19,7 +19,7 @@ import java.util.List;
  * http://codetheory.in/android-dividing-listview-sections-group-headers/
  */
 
-public class TaskListAdapter extends ArrayAdapter<TaskContract> {
+public class TaskListAdapter extends ArrayAdapter<Task> {
     private Context mContext;
 
     // View Type for Separators
@@ -69,7 +69,7 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
 
         TaskViewHolder holder;
 
-        TaskContract task = getItem(position);
+        Task task = getItem(position);
         int itemViewType = getItemViewType(position);
 
         if (convertView == null) {
@@ -104,9 +104,9 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
     }
 
     public void addRaw(Cursor cursor) {
-        List<List<TaskContract>> group = new ArrayList<List<TaskContract>>(6);
+        List<List<Task>> group = new ArrayList<List<Task>>(6);
         for (int i =0; i <6; i++){
-            group.add(new ArrayList<TaskContract>());
+            group.add(new ArrayList<Task>());
         }
         cursor.moveToPosition(-1);
         while (cursor.moveToNext()) {
@@ -117,7 +117,7 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
             int countDown = cursor.getInt(5);
             int countUp = cursor.getInt(6);
             String deadline = cursor.getString(7);
-            TaskContract task = new TaskContract(name,
+            Task task = new Task(name,
                     category,
                     priority,
                     trackable,
@@ -128,12 +128,12 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
             group.get(category.getLevel() - 1).add(task);
         }
 
-        List<TaskContract> flatten = new ArrayList<>();
+        List<Task> flatten = new ArrayList<>();
         for (TaskCategoryEnum category : TaskCategoryEnum.values()){
-            List<TaskContract> list = group.get(category.getLevel()-1);
+            List<Task> list = group.get(category.getLevel() - 1);
             if(!list.isEmpty()){
                 Collections.sort(list);
-                flatten.add(TaskContract.Separator(category));
+                flatten.add(Task.Separator(category));
                 flatten.addAll(list);
             }
         }
@@ -145,7 +145,7 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
     static class TaskViewHolder{
         TextView name;
 
-        public void populateView(TaskContract task){
+        public void populateView(Task task) {
             name.setText(task.name);
         };
     }
@@ -153,7 +153,7 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
     private static class TaskSeparatorViewHolder extends TaskViewHolder{
 
         @Override
-        public void populateView(TaskContract task) {
+        public void populateView(Task task) {
             super.populateView(task);
             switch (task.category) {
                     case DEFAULT:
@@ -188,7 +188,7 @@ public class TaskListAdapter extends ArrayAdapter<TaskContract> {
         TextView repetition;
 
         @Override
-        public void populateView(TaskContract task) {
+        public void populateView(Task task) {
             super.populateView(task);
             priority.setRating(task.priority);
             deadline.setText("Due: " + task.deadline);

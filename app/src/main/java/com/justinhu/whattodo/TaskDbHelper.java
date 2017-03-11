@@ -74,7 +74,7 @@ class TaskDbHelper extends SQLiteOpenHelper {
     }
 
 
-    void saveNewTask(TaskContract newTask) {
+    void saveNewTask(Task newTask) {
         SQLiteDatabase mDb = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TaskEntry.COLUMN_NAME_NAME, newTask.name);

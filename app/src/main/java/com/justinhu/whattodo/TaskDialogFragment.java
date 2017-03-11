@@ -26,7 +26,6 @@ import android.widget.RatingBar;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -44,22 +43,25 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     private int mode;
     private boolean isWorking;
     private boolean otherWorking;
-    private TaskContract task;
+    private Task task;
+
+    private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
+    private NewTaskDialogListener listener;
 
     private Toolbar toolbar;
     private EditText taskname;
     private ImageButton categoryButton;
     private RatingBar priority;
     private Switch trackableSwitch;
-    private View trackableOptions;
+    private View trackableValues;
     private EditText countDown;
+    private Switch deadlineSwitch;
+    private View deadlineValue;
     private TextView deadline;
     private DatePickerDialog deadlinePicker;
-    private SimpleDateFormat dateFormatter = TaskContract.dateFormatter;
-    private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
-    private NewTaskDialogListener listener;
+
+
     private View takeTaskView;
-    private TextView taskTaskText;
     private Button acceptButton;
     private Button declineButton;
     private View taskOngoingView;
@@ -80,14 +82,15 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     public static final int TASK_DIALOG_MODE_EDIT = 2;
 
 
+
     //public static final int TASK_DIALOG_MODE_TAKE = 3;
 
     interface NewTaskDialogListener {
-        void onTaskSaveClick(TaskContract newTask);
+        void onTaskSaveClick(Task newTask);
 
         void onTaskDeleteClick(int id);
 
-        void onTaskAcceptClick(TaskContract acceptedTask);
+        void onTaskAcceptClick(Task acceptedTask);
 
         void onTaskDidClick(int id);
 
@@ -99,7 +102,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         super.setArguments(args);
         this.mode = args.getInt(ARGS_KEY_MODE,TASK_DIALOG_MODE_NEW);
         if(mode != TASK_DIALOG_MODE_NEW){
-            task = (TaskContract) args.getSerializable(ARGS_KEY_TASK);
+            task = (Task) args.getSerializable(ARGS_KEY_TASK);
         }
         this.isWorking = args.getBoolean(ARGS_KEY_THIS_WORKING, false);
         this.otherWorking = args.getBoolean(ARGS_KEY_OTHER_WORKING, false);
@@ -116,7 +119,6 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
 
         findViews(rootView);
 
-        toolbar.setTitle("New Task");
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         if (actionBar != null) {
@@ -130,9 +132,19 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked){
-                    trackableOptions.setVisibility(View.VISIBLE);
+                    trackableValues.setVisibility(View.VISIBLE);
                 }else{
-                    trackableOptions.setVisibility(View.GONE);
+                    trackableValues.setVisibility(View.GONE);
+                }
+            }
+        });
+        deadlineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    deadlineValue.setVisibility(View.VISIBLE);
+                } else {
+                    deadlineValue.setVisibility(View.GONE);
                 }
             }
         });
@@ -150,25 +162,28 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 Calendar newDate = Calendar.getInstance();
                 newDate.set(year, monthOfYear, dayOfMonth);
-                deadline.setText(dateFormatter.format(newDate.getTime()));
+                deadline.setText(Task.dateFormatter.format(newDate.getTime()));
             }
 
         },newCalendar.get(Calendar.YEAR), newCalendar.get(Calendar.MONTH), newCalendar.get(Calendar.DAY_OF_MONTH));
+        deadlinePicker.getDatePicker().setMinDate(System.currentTimeMillis());
 
 
 
         if(task!= null){
             populateViews();
         }else{
-            deadline.setText(TaskContract.DEFAULT_DATE);
-            trackableSwitch.setChecked(false);
+            deadline.setText(Task.dateFormatter.format(newCalendar.getTime()));
+            trackableSwitch.setChecked(true);
         }
 
         if (mode == TASK_DIALOG_MODE_NEW) {
+            toolbar.setTitle("New Task");
             setViewsEnabled(true);
             takeTaskView.setVisibility(View.GONE);
             taskOngoingView.setVisibility(View.GONE);
         } else {
+            toolbar.setTitle("Task Details");
             setViewsEnabled(false);
             if (otherWorking) {
                 takeTaskView.setVisibility(View.GONE);
@@ -187,16 +202,21 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     private void findViews(View rootView){
         toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         taskname = (EditText) rootView.findViewById(R.id.taskname);
-        priority = (RatingBar) rootView.findViewById(R.id.priority);
-        trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
-        trackableOptions = rootView.findViewById(R.id.option);
-        countDown = (EditText)  rootView.findViewById(R.id.task_count);
-        deadline = (TextView) rootView.findViewById(R.id.task_deadline);
         categoryButton = (ImageButton) rootView.findViewById(R.id.task_category);
-        takeTaskView = rootView.findViewById(R.id.takeView);
-        taskTaskText = (TextView) rootView.findViewById(R.id.takeTask);
+        priority = (RatingBar) rootView.findViewById(R.id.priority);
+
+        trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
+        trackableValues = rootView.findViewById(R.id.view_trackable_value);
+        countDown = (EditText)  rootView.findViewById(R.id.task_count);
+
+        deadlineSwitch = (Switch) rootView.findViewById(R.id.has_deadline);
+        deadlineValue = rootView.findViewById(R.id.deadline_value);
+        deadline = (TextView) rootView.findViewById(R.id.deadline_input);
+
+        takeTaskView = rootView.findViewById(R.id.task_take);
         acceptButton = (Button) rootView.findViewById(R.id.accept);
         declineButton = (Button) rootView.findViewById(R.id.decline);
+
         taskOngoingView = rootView.findViewById(R.id.task_ongoing);
         taskAbortButton = (Button) rootView.findViewById(R.id.button_abort);
         taskDidButton = (Button) rootView.findViewById(R.id.button_did);
@@ -207,6 +227,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         onTaskCategoryClick(task.category);
         priority.setRating(task.priority);
         trackableSwitch.setChecked(task.trackable);
+        deadlineSwitch.setChecked(task.deadline != Task.DEFAULT_DATE);
         countDown.setText(String.format (Locale.US,"%d", task.countDown));
         deadline.setText(task.deadline);
     }
@@ -218,7 +239,6 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         trackableSwitch.setEnabled(enabled);
         countDown.setEnabled(enabled);
         deadline.setEnabled(enabled);
-        taskTaskText.setEnabled(!enabled);
         declineButton.setEnabled(!enabled);
         acceptButton.setEnabled(!enabled);
         taskDidButton.setEnabled(!enabled);
@@ -256,6 +276,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             editAction.setVisible(true);
             deleteAction.setVisible(true);
         }else if(mode == TASK_DIALOG_MODE_EDIT){
+            toolbar.setTitle("Edit Task");
             saveAction.setVisible(true);
             editAction.setVisible(false);
             deleteAction.setVisible(true);
@@ -267,14 +288,14 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_save) {
-            TaskContract newTask = new TaskContract(
+            Task newTask = new Task(
                     taskname.getText().toString(),
                     taskCategory,
                     (int)priority.getRating(),
                     trackableSwitch.isChecked(),
                     Integer.parseInt(countDown.getText().toString()),
                     0,
-                    deadline.getText().toString()
+                    (deadlineSwitch.isChecked() && trackableSwitch.isChecked()) ? deadline.getText().toString() : Task.DEFAULT_DATE
             );
 
             if (mode == TASK_DIALOG_MODE_NEW) {
@@ -294,6 +315,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
             task = newTask;
 
             mode = TASK_DIALOG_MODE_VIEW;
+            toolbar.setTitle("Task Details");
             setViewsEnabled(false);
 
             onPrepareOptionsMenu(mMenu);
@@ -306,12 +328,14 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
                 return true;
             }
             mode = TASK_DIALOG_MODE_VIEW;
+            toolbar.setTitle("Task Details");
             setViewsEnabled(false);
             onPrepareOptionsMenu(mMenu);
 
             return true;
         }else if (id == R.id.action_edit){
             mode = TASK_DIALOG_MODE_EDIT;
+            toolbar.setTitle("Edit Task");
             setViewsEnabled(true);
             onPrepareOptionsMenu(mMenu);
             return true;
