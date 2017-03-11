@@ -1,7 +1,6 @@
 https://guides.codepath.com/android/Using-DialogFragment
 
 TODO:
-- input validation
 - sub task
 - notification for current task
 - configure category order and add user defined category
@@ -11,9 +10,4 @@ TODO:
 - async db and/or content provider
 - recycler view
 
-
-has deadline?
-due one xxx
-trackable (not a routine task)?
-repeat X times
 *frequency limit

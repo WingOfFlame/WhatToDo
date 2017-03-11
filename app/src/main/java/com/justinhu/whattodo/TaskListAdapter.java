@@ -26,14 +26,13 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
     private Context mContext;
     private static Date currentTime;
 
-    // View Type for Separators
     private static final int ITEM_VIEW_TYPE_SEPARATOR = 0;
-    // View Type for Regular rows
     private static final int ITEM_VIEW_TYPE_REGULAR = 1;
-    // Types of Views that need to be handled
-    // -- Separators and Regular rows --
     private static final int ITEM_VIEW_TYPE_COUNT = 2;
 
+    private static final int LIST_FILTER_ALL = 0;
+    private static final int LIST_FILTER_ONTIME = 1;
+    private static final int LIST_FILTER_OVERDUE = 2;
 
     public TaskListAdapter(Context mContext) {
         super(mContext,0);
@@ -108,7 +107,7 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         return convertView;
     }
 
-    public void addRaw(Cursor cursor) {
+    public void addFromCursor(Cursor cursor) {
         Calendar newDate = Calendar.getInstance();
         newDate.add(Calendar.HOUR, -30);
         currentTime = newDate.getTime();
@@ -138,6 +137,39 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         }
 
         List<Task> flatten = new ArrayList<>();
+        for (TaskCategoryEnum category : TaskCategoryEnum.values()) {
+            List<Task> list = group.get(category.getLevel() - 1);
+            if (!list.isEmpty()) {
+                Collections.sort(list);
+                flatten.add(Task.Separator(category));
+                flatten.addAll(list);
+            }
+        }
+        clear();
+        addAll(flatten);
+    }
+
+
+    public int addFromList(List<Task> taskList, int filter) {
+        Calendar newDate = Calendar.getInstance();
+        newDate.add(Calendar.HOUR, -30);
+        currentTime = newDate.getTime();
+
+        List<List<Task>> group = new ArrayList<List<Task>>(6);
+        for (int i = 0; i < 6; i++) {
+            group.add(new ArrayList<Task>());
+        }
+
+        for (Task t : taskList) {
+            if (filter == LIST_FILTER_OVERDUE && t.getDeadlineOrigin().compareTo(currentTime) >= 0) {
+                continue;
+            }
+            if (filter == LIST_FILTER_ONTIME && t.getDeadlineOrigin().compareTo(currentTime) < 0) {
+                continue;
+            }
+            group.get(t.category.getLevel() - 1).add(t);
+        }
+        List<Task> flatten = new ArrayList<>();
         for (TaskCategoryEnum category : TaskCategoryEnum.values()){
             List<Task> list = group.get(category.getLevel() - 1);
             if(!list.isEmpty()){
@@ -148,6 +180,7 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         }
         clear();
         addAll(flatten);
+        return flatten.size();
     }
 
 

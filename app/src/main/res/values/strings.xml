@@ -3,6 +3,12 @@
     <string name="action_settings">Settings</string>
 
     <string name="toolbar_title">All Tasks</string>
+    <string-array name="toolbar_filter">
+        <item>All Tasks</item>
+        <item>On Time</item>
+        <item>Overdue</item>
+    </string-array>
+
     <string name="btn_get_task">What to do?</string>
 
     <!--Task Listview & Bottom Sheet-->

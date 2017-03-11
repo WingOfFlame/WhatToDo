@@ -24,10 +24,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,15 +38,17 @@ import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
     public static final String CURRENT_TASK = "currentTask";
     List<Task> mDataCopy;
     TaskDbHelper mDbHelper;
     private Cursor oldCursor;
+    String[] filterValue;
 
-    TextView mTitle;
+    //TextView mTitle;
+    Spinner filter;
     ListView taskList;
-    TaskListAdapter mAdapter;
+    TaskListAdapter mtaskListAdapter;
     View bottomSheetShadow;
     CoordinatorLayout ongoingTask;
     private BottomSheetBehavior bottomSheetBehavior;
@@ -66,6 +70,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     SharedPreferences storage;
 
     private static final String TAG = "MainActivity";
+    private int lastFilter = 0;
+    private boolean needRefresh = false;
 
 
     @Override
@@ -77,7 +83,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        //mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
+        filter = (Spinner) toolbar.findViewById(R.id.toolbar_filter);
         taskList = (ListView) findViewById(R.id.taskList);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         randomSelect = (Button) findViewById(R.id.select);
@@ -98,13 +105,18 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         } else {
             Log.w(TAG, "SupportActionBar is null");
         }
-        mTitle.setText(R.string.toolbar_title);
+        //mTitle.setText(R.string.toolbar_title);
+        filterValue = getResources().getStringArray(R.array.toolbar_filter);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, R.layout.filter_item, filterValue);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        filter.setAdapter(adapter);
+        filter.setOnItemSelectedListener(this);
 
         View emptyView=findViewById(R.id.list_empty);
         //Empty view is set here
         taskList.setEmptyView(emptyView);
-        mAdapter = new TaskListAdapter(this);
-        taskList.setAdapter(mAdapter);
+        mtaskListAdapter = new TaskListAdapter(this);
+        taskList.setAdapter(mtaskListAdapter);
         taskList.setMultiChoiceModeListener(new ModeCallback());
         taskList.setOnItemClickListener(this);
 
@@ -155,6 +167,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     protected void onStart() {
         Log.i(TAG, "onStart");
         super.onStart();
+        if (needRefresh) {
+            mtaskListAdapter.addFromList(mDataCopy, lastFilter);
+            needRefresh = false;
+        }
     }
 
     @Override
@@ -170,6 +186,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     protected void onStop() {
         Log.i(TAG, "onStop");
         super.onStop();
+        needRefresh = true;
     }
 
     @Override
@@ -222,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     @Override
     public void onTaskAcceptClick(Task acceptedTask) {
-        randomSelect.setVisibility(View.INVISIBLE);
+        randomSelect.setVisibility(View.GONE);
         currentTask = acceptedTask;
         updateBottomSheet();
 
@@ -291,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+    public Loader<Cursor> onCreateLoader(int id, final Bundle args) {
         Log.i(TAG, "onCreateLoader");
         return new AsyncTaskLoader<Cursor>(MainActivity.this) {
             @Override
@@ -310,9 +327,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         so the cursor would be an closed old one
         */
         Log.i(TAG, "onLoadFinished");
-        mAdapter.addRaw(cursor);
+
         copyData(cursor);
-        if(mDataCopy.size()>0){
+        int added = mtaskListAdapter.addFromList(mDataCopy, lastFilter);
+        if (added > 0) {
             randomSelect.setVisibility(View.VISIBLE);
         }else{
             randomSelect.setVisibility(View.GONE);
@@ -436,6 +454,26 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     }
 
 
+    /* filter spinner */
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        if (position != lastFilter) {
+            lastFilter = position;
+            int added = mtaskListAdapter.addFromList(mDataCopy, lastFilter);
+            if (added > 0) {
+                randomSelect.setVisibility(View.VISIBLE);
+            } else {
+                randomSelect.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
+
+    /* livtview longclick*/
     private class ModeCallback implements ListView.MultiChoiceModeListener {
 
         @Override
@@ -473,7 +511,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
                     if (checkedItems != null) {
                         for (int i = 0; i < checkedItems.size(); i++) {
                             if (checkedItems.valueAt(i)) {
-                                Task selecteditem = mAdapter.getItem(checkedItems.keyAt(i));
+                                Task selecteditem = mtaskListAdapter.getItem(checkedItems.keyAt(i));
                                 if(selecteditem != null){
                                     // Remove selected items following the
                                     toDelete.add(String.valueOf(selecteditem.getId()));
