@@ -1,5 +1,7 @@
-package com.justinhu.whattodo;
+package com.justinhu.whattodo.model;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 
 import java.io.Serializable;
@@ -12,24 +14,25 @@ import java.util.Locale;
  * Created by justinhu on 2017-02-23.
  */
 
-class Task implements Comparable, Serializable {
-    static SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
-    static String DEFAULT_DATE = "No Deadline";
-    static String DEFAULT_TITLE = "(No Name)";
+public class Task implements Comparable, Serializable {
+    public static boolean useCategory = false;
+    public static SimpleDateFormat dateFormatter = new SimpleDateFormat("MMM dd, yyyy", Locale.US);
+    public static String DEFAULT_DATE = "No Deadline";
+    public static String DEFAULT_TITLE = "(No Name)";
 
     private int id;
-    String name;
-    TaskCategoryEnum category;
-    int priority;
-    boolean trackable;
-    int countDown;
-    int countUp;
+    public String name;
+    public TaskCategoryEnum category;
+    public int priority;
+    public boolean trackable;
+    public int countDown;
+    public int countUp;
     private Date deadlineOrigin = null;
     private String deadline;
     private boolean isSeperator;
 
 
-    Task(String name, TaskCategoryEnum category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
+    public Task(String name, TaskCategoryEnum category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
         if (name.equals("")) {
             name = DEFAULT_TITLE;
         }
@@ -56,7 +59,7 @@ class Task implements Comparable, Serializable {
         this.isSeperator = true;
     }
 
-    static Task Separator(TaskCategoryEnum category) {
+    public static Task Separator(TaskCategoryEnum category) {
         return new Task(category);
     }
 
@@ -72,13 +75,13 @@ class Task implements Comparable, Serializable {
         }
     }
 
-    void setId(int id){
+    public void setId(int id){
         this.id = id;
     }
-    int getId(){
+    public int getId(){
         return this.id;
     }
-    boolean isSeperator(){
+    public boolean isSeperator(){
         return this.isSeperator;
     }
 
@@ -90,10 +93,11 @@ class Task implements Comparable, Serializable {
         if (dateOrder != 0) {
             return dateOrder;
         }
+        if(useCategory){
+            return otherTask.priority * otherTask.category.getLevel() - this.priority * this.category.getLevel();
+        }
 
-        int priorityOrder = otherTask.priority * otherTask.category.getLevel() - this.priority * this.category.getLevel();
-
-        return priorityOrder;
+        return otherTask.priority  - this.priority;
 
     }
 

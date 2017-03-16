@@ -1,5 +1,8 @@
 package com.justinhu.whattodo;
 
+import com.justinhu.whattodo.model.Task;
+import com.justinhu.whattodo.model.TaskCategoryEnum;
+
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;

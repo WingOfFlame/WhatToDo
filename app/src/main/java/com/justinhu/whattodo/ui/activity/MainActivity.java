@@ -1,10 +1,12 @@
-package com.justinhu.whattodo;
+package com.justinhu.whattodo.ui.activity;
 
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
@@ -34,6 +36,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.justinhu.whattodo.db.CategoryDBHelper;
+import com.justinhu.whattodo.db.TaskDbHelper;
+import com.justinhu.whattodo.R;
+import com.justinhu.whattodo.model.Task;
+import com.justinhu.whattodo.model.TaskCategoryEnum;
+import com.justinhu.whattodo.ui.fragment.TaskDialogFragment;
+import com.justinhu.whattodo.TaskListAdapter;
+import com.justinhu.whattodo.TaskSelector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,7 +51,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
     public static final String CURRENT_TASK = "currentTask";
     List<Task> mDataCopy;
-    TaskDbHelper mDbHelper;
+    TaskDbHelper mTaskDbHelper;
     private Cursor oldCursor;
     String[] filterValue;
 
@@ -79,7 +89,12 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
-        mDbHelper = TaskDbHelper.getInstance(MainActivity.this);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        boolean syncConnPref = sharedPref.getBoolean(SettingsActivity.KEY_PREF_CATEGORY, false);
+        Log.i(TAG, "pref is" + syncConnPref);
+        mTaskDbHelper = TaskDbHelper.getInstance(MainActivity.this);
+        CategoryDBHelper.getInstance(MainActivity.this);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -193,7 +208,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     protected void onDestroy() {
         Log.i(TAG, "onDestroy");
         super.onDestroy();
-        mDbHelper.close();
+        mTaskDbHelper.close();
     }
 
     @Override
@@ -213,6 +228,9 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+
+            //startActivity(new Intent(MainActivity.this, CategorySettingActivity.class));
             return true;
         } else if (id == R.id.action_save) {
             return false;
@@ -227,13 +245,13 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             currentTask = newTask;
             updateBottomSheet();
         }
-        mDbHelper.saveNewTask(newTask);
+        mTaskDbHelper.saveNewTask(newTask);
         getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
     }
 
     @Override
     public void onTaskDeleteClick(int id) {
-        mDbHelper.deleteTask(id);
+        mTaskDbHelper.deleteTask(id);
         getSupportLoaderManager().restartLoader(0, null, this).forceLoad();
     }
 
@@ -314,7 +332,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             @Override
             public Cursor loadInBackground() {
                 Log.i(TAG, "Getting Cursor");
-                return mDbHelper.getTasksCursor();
+                return mTaskDbHelper.getTasksCursor();
             }
         };
     }
@@ -449,7 +467,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     }
 
     private void onMultiTaskDelete(ArrayList<String> toDelete) {
-        mDbHelper.deleteMultiTask(toDelete);
+        mTaskDbHelper.deleteMultiTask(toDelete);
         getSupportLoaderManager().restartLoader(0, null, MainActivity.this).forceLoad();
     }
 

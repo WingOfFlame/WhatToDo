@@ -1,4 +1,4 @@
-package com.justinhu.whattodo;
+package com.justinhu.whattodo.model;
 
 /**
  * Created by justinhu on 2017-02-22.

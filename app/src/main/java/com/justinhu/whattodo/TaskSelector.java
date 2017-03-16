@@ -1,5 +1,7 @@
 package com.justinhu.whattodo;
 
+import com.justinhu.whattodo.model.Task;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;

@@ -1,4 +1,4 @@
-package com.justinhu.whattodo;
+package com.justinhu.whattodo.db;
 
 
 import android.content.ContentValues;
@@ -11,6 +11,8 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.justinhu.whattodo.model.Task;
+
 import java.util.ArrayList;
 
 /**
@@ -19,7 +21,19 @@ import java.util.ArrayList;
  * http://www.androiddesignpatterns.com/2012/05/correctly-managing-your-sqlite-database.html
  */
 
-class TaskDbHelper extends SQLiteOpenHelper {
+public class TaskDbHelper extends SQLiteOpenHelper {
+    private static class TaskEntry implements BaseColumns {
+        static final String TABLE_NAME = "task";
+        static final String COLUMN_NAME_NAME = "name";
+        static final String COLUMN_NAME_CATEGORY = "category";
+        static final String COLUMN_NAME_PRIORITY = "priority";
+        static final String COLUMN_NAME_TRACKABLE = "trackable";
+        static final String COLUMN_NAME_COUNTDOWN = "countDown";
+        static final String COLUMN_NAME_COUNTUP = "countUp";
+        static final String COLUMN_NAME_DEADLINE= "deadline";
+
+    }
+
     private static final String TAG = "TaskDbHelper";
     private static TaskDbHelper sInstance;
     // If you change the database schema, you must increment the database version.
@@ -39,7 +53,7 @@ class TaskDbHelper extends SQLiteOpenHelper {
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + TaskEntry.TABLE_NAME;
 
-    static synchronized TaskDbHelper getInstance(Context context) {
+    public static synchronized TaskDbHelper getInstance(Context context) {
 
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
@@ -52,7 +66,7 @@ class TaskDbHelper extends SQLiteOpenHelper {
 
     private TaskDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        new OpenDbTask().execute();
+        getWritableDatabase();
     }
 
 
@@ -74,7 +88,7 @@ class TaskDbHelper extends SQLiteOpenHelper {
     }
 
 
-    void saveNewTask(Task newTask) {
+    public void saveNewTask(Task newTask) {
         SQLiteDatabase mDb = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TaskEntry.COLUMN_NAME_NAME, newTask.name);
@@ -93,7 +107,7 @@ class TaskDbHelper extends SQLiteOpenHelper {
 
     }
 
-    Cursor getTasksCursor(){//TODO:create test for this
+    public Cursor getTasksCursor(){//TODO:create test for this
 
         SQLiteDatabase mDb = getWritableDatabase();
         String selectQuery = "SELECT  * FROM " + TaskEntry.TABLE_NAME;
@@ -104,28 +118,17 @@ class TaskDbHelper extends SQLiteOpenHelper {
         return cursor;
     }
 
-    void deleteTask(int id) {
+    public void deleteTask(int id) {
         SQLiteDatabase mDb = getWritableDatabase();
         mDb.delete(TaskEntry.TABLE_NAME, "_id = ?", new String[] { Integer.toString(id)});
     }
 
-    void deleteMultiTask(ArrayList<String> toDelete) {
+    public void deleteMultiTask(ArrayList<String> toDelete) {
         String args = TextUtils.join(",", toDelete);
         SQLiteDatabase mDb = getWritableDatabase();
         mDb.delete(TaskEntry.TABLE_NAME, "_id IN (" + args + ")", null);
     }
 
-    private static class TaskEntry implements BaseColumns {
-        static final String TABLE_NAME = "task";
-        static final String COLUMN_NAME_NAME = "name";
-        static final String COLUMN_NAME_CATEGORY = "category";
-        static final String COLUMN_NAME_PRIORITY = "priority";
-        static final String COLUMN_NAME_TRACKABLE = "trackable";
-        static final String COLUMN_NAME_COUNTDOWN = "countDown";
-        static final String COLUMN_NAME_COUNTUP = "countUp";
-        static final String COLUMN_NAME_DEADLINE= "deadline";
-
-    }
 
 
     private class OpenDbTask extends AsyncTask<Void, Void, Void> {

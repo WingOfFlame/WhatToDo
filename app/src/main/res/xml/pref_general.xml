@@ -1,0 +1,17 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="category_switch"
+        android:summary="@string/pref_summ_category_switch"
+        android:title="@string/pref_title_category_switch" />
+
+
+    <Preference
+        android:key="pref_key_category"
+        android:dependency="category_switch"
+        android:title="@string/pref_category_priority">
+        <intent android:action="com.justinhu.whattodo.ui.activity.SettingsActivity" />
+    </Preference>
+
+</PreferenceScreen>

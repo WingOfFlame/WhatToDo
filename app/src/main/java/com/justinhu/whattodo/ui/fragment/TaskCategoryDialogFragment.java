@@ -1,13 +1,17 @@
-package com.justinhu.whattodo;
+package com.justinhu.whattodo.ui.fragment;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+
+import com.justinhu.whattodo.R;
+import com.justinhu.whattodo.model.TaskCategoryEnum;
 
 /**
  * Created by justinhu on 2017-02-22.
@@ -27,13 +31,14 @@ public class TaskCategoryDialogFragment extends DialogFragment implements View.O
     public interface TaskCategoryDialogListener {
         public void onTaskCategoryClick(TaskCategoryEnum category);
     }
+    @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_category, null);
+        View view = inflater.inflate(R.layout.dialog_select_category, null);
 
         defaultButton = (Button) view.findViewById(R.id.button_default);
         workButton = (Button) view.findViewById(R.id.button_work);

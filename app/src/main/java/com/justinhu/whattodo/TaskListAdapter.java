@@ -10,6 +10,9 @@ import android.widget.ArrayAdapter;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.justinhu.whattodo.model.Task;
+import com.justinhu.whattodo.model.TaskCategoryEnum;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;

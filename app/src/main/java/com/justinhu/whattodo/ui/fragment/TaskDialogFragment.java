@@ -1,4 +1,4 @@
-package com.justinhu.whattodo;
+package com.justinhu.whattodo.ui.fragment;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
@@ -25,6 +25,10 @@ import android.widget.ImageButton;
 import android.widget.RatingBar;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.justinhu.whattodo.R;
+import com.justinhu.whattodo.model.TaskCategoryEnum;
+import com.justinhu.whattodo.model.Task;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -85,7 +89,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
 
     //public static final int TASK_DIALOG_MODE_TAKE = 3;
 
-    interface NewTaskDialogListener {
+    public interface NewTaskDialogListener {
         void onTaskSaveClick(Task newTask);
 
         void onTaskDeleteClick(int id);
