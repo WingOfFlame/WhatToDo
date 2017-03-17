@@ -39,16 +39,16 @@ import com.google.gson.Gson;
 import com.justinhu.whattodo.db.CategoryDBHelper;
 import com.justinhu.whattodo.db.TaskDbHelper;
 import com.justinhu.whattodo.R;
+import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.Task;
-import com.justinhu.whattodo.model.TaskCategoryEnum;
-import com.justinhu.whattodo.ui.fragment.TaskDialogFragment;
+import com.justinhu.whattodo.ui.fragment.TaskDialog;
 import com.justinhu.whattodo.TaskListAdapter;
 import com.justinhu.whattodo.TaskSelector;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements TaskDialogFragment.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements TaskDialog.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
     public static final String CURRENT_TASK = "currentTask";
     List<Task> mDataCopy;
     TaskDbHelper mTaskDbHelper;
@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
     private static final String TAG = "MainActivity";
     private int lastFilter = 0;
     private boolean needRefresh = false;
+    private CategoryDBHelper mCategoryDBHelper;
 
 
     @Override
@@ -89,12 +90,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
-        boolean syncConnPref = sharedPref.getBoolean(SettingsActivity.KEY_PREF_CATEGORY, false);
-        Log.i(TAG, "pref is" + syncConnPref);
-        mTaskDbHelper = TaskDbHelper.getInstance(MainActivity.this);
-        CategoryDBHelper.getInstance(MainActivity.this);
+        initConfig();
+
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -178,10 +175,24 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
     }
 
+    void initConfig(){
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
+        Task.useCategory = sharedPref.getBoolean(SettingsActivity.KEY_PREF_CATEGORY, false);
+
+        mTaskDbHelper = TaskDbHelper.getInstance(MainActivity.this);
+        mCategoryDBHelper  = CategoryDBHelper.getInstance(MainActivity.this);
+
+        Cursor cursor = mCategoryDBHelper.getCategory();
+        List<Category> data = mCategoryDBHelper.getCategoryList(this,cursor);
+        Category.updateLookupTable(data);
+    }
     @Override
     protected void onStart() {
         Log.i(TAG, "onStart");
         super.onStart();
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        Task.useCategory = sharedPref.getBoolean(SettingsActivity.KEY_PREF_CATEGORY, false);
         if (needRefresh) {
             mtaskListAdapter.addFromList(mDataCopy, lastFilter);
             needRefresh = false;
@@ -284,29 +295,9 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             Log.e(TAG, "Empty currentTask, but updateBottomSheet called");
         }
         taskName.setText(currentTask.name);
-        switch (currentTask.category) {
-            case DEFAULT:
-                taskCategory.setImageResource(R.drawable.ic_default_grey_500_24dp);
-                break;
-            case WORK:
-                taskCategory.setImageResource(R.drawable.ic_work_red_500_24dp);
-                break;
-            case SCHOOL:
-                taskCategory.setImageResource(R.drawable.ic_school_orange_500_24dp);
-                break;
-            case EXERCISE:
-                taskCategory.setImageResource(R.drawable.ic_fitness_center_teal_500_24dp);
-                break;
-            case PERSONAL:
-                taskCategory.setImageResource(R.drawable.ic_person_green_500_24dp);
-                break;
-            case RELAX:
-                taskCategory.setImageResource(R.drawable.ic_relax_light_green_500_24dp);
-                break;
-            default:
-                taskCategory.setImageResource(R.drawable.ic_default_grey_500_24dp);
-                break;
-        }
+        Category c = Category.lookupTable.get(currentTask.category);
+        taskCategory.setImageResource(c.getIconId());
+        taskCategory.setColorFilter(Color.parseColor(c.color));
         taskPriority.setRating(currentTask.priority);
         String countLabel;
         if (currentTask.trackable) {
@@ -369,8 +360,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
             try {
                 Task task = TaskSelector.selectTask(mDataCopy);
                 Bundle args = new Bundle();
-                args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
-                args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, task);
+                args.putInt(TaskDialog.ARGS_KEY_MODE, TaskDialog.TASK_DIALOG_MODE_VIEW);
+                args.putSerializable(TaskDialog.ARGS_KEY_TASK, task);
                 spawnTaskDialog(args);
             } catch (IndexOutOfBoundsException e) {
                 Toast.makeText(MainActivity.this, "No valid task to be selected", Toast.LENGTH_LONG).show();
@@ -378,7 +369,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
 
         } else if (v == fab) {
             Bundle args = new Bundle();
-            args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_NEW);
+            args.putInt(TaskDialog.ARGS_KEY_MODE, TaskDialog.TASK_DIALOG_MODE_NEW);
             spawnTaskDialog(args);
         }else if (v == taskAbort || v == taskDid){
             if(v == taskDid){
@@ -420,19 +411,19 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         Task selected = (Task) parent.getAdapter().getItem(position);
         if (currentTask != null) {
             if (currentTask.getId() == selected.getId()) {
-                args.putBoolean(TaskDialogFragment.ARGS_KEY_THIS_WORKING, true);
+                args.putBoolean(TaskDialog.ARGS_KEY_THIS_WORKING, true);
             } else {
-                args.putBoolean(TaskDialogFragment.ARGS_KEY_OTHER_WORKING, true);
+                args.putBoolean(TaskDialog.ARGS_KEY_OTHER_WORKING, true);
             }
         }
-        args.putInt(TaskDialogFragment.ARGS_KEY_MODE, TaskDialogFragment.TASK_DIALOG_MODE_VIEW);
-        args.putSerializable(TaskDialogFragment.ARGS_KEY_TASK, selected);
+        args.putInt(TaskDialog.ARGS_KEY_MODE, TaskDialog.TASK_DIALOG_MODE_VIEW);
+        args.putSerializable(TaskDialog.ARGS_KEY_TASK, selected);
         spawnTaskDialog(args);
     }
 
     private void spawnTaskDialog(Bundle args) {
 
-        DialogFragment dialog = new TaskDialogFragment();
+        DialogFragment dialog = new TaskDialog();
         dialog.setArguments(args);
         dialog.setRetainInstance(true);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
@@ -446,7 +437,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialogFragmen
         List<Task> copy = new ArrayList<>();
         while (cursor.moveToNext()) {
             String name = cursor.getString(1);
-            TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
+            String category = cursor.getString(2);
             int priority = cursor.getInt(3);
             boolean trackable = cursor.getInt(4) == 1;
             int countDown = cursor.getInt(5);

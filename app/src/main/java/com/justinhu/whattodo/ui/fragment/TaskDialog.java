@@ -3,6 +3,7 @@ package com.justinhu.whattodo.ui.fragment;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -27,7 +28,7 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import com.justinhu.whattodo.R;
-import com.justinhu.whattodo.model.TaskCategoryEnum;
+import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.Task;
 
 import java.util.Calendar;
@@ -40,16 +41,16 @@ import java.util.Locale;
  *  http://androidopentutorials.com/android-datepickerdialog-on-edittext-click-event/
  */
 
-public class TaskDialogFragment extends DialogFragment implements View.OnClickListener, TaskCategoryDialogFragment.TaskCategoryDialogListener{
+public class TaskDialog extends DialogFragment implements View.OnClickListener, TaskCategoryDialog.TaskCategoryDialogListener{
 
-    private static final String TAG = "TaskDialogFragment";
+    private static final String TAG = "TaskDialog";
 
     private int mode;
     private boolean isWorking;
     private boolean otherWorking;
     private Task task;
 
-    private TaskCategoryEnum taskCategory = TaskCategoryEnum.DEFAULT;
+    private Category taskCategory = Category.getDefaultCategory();
     private NewTaskDialogListener listener;
 
     private Toolbar toolbar;
@@ -228,10 +229,10 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
 
     private void populateViews() {
         taskname.setText(task.name);
-        onTaskCategoryClick(task.category);
+        onTaskCategoryClick(Category.getCategory(task.category));
         priority.setRating(task.priority);
         trackableSwitch.setChecked(task.trackable);
-        deadlineSwitch.setChecked(task.getDeadline() != Task.DEFAULT_DATE);
+        deadlineSwitch.setChecked(!task.getDeadline().equals(Task.DEFAULT_DATE));
         countDown.setText(String.format (Locale.US,"%d", task.countDown));
         deadline.setText(task.getDeadline());
     }
@@ -294,7 +295,7 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         if (id == R.id.action_save) {
             Task newTask = new Task(
                     taskname.getText().toString(),
-                    taskCategory,
+                    taskCategory.getName(),
                     (int)priority.getRating(),
                     trackableSwitch.isChecked(),
                     Integer.parseInt(countDown.getText().toString()),
@@ -357,9 +358,9 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
         if(v == deadline) {
             deadlinePicker.show();
         }else if(v == categoryButton){
-            DialogFragment dialog = new TaskCategoryDialogFragment();
-            dialog.setTargetFragment(TaskDialogFragment.this,0);
-            dialog.show(getFragmentManager(), "TaskCategoryDialogFragment");
+            DialogFragment dialog = new TaskCategoryDialog();
+            dialog.setTargetFragment(TaskDialog.this,0);
+            dialog.show(getFragmentManager(), "TaskCategoryDialog");
         }else if(v == declineButton){
             dismiss();
         }else if(v == acceptButton){
@@ -375,31 +376,11 @@ public class TaskDialogFragment extends DialogFragment implements View.OnClickLi
     }
 
     @Override
-    public void onTaskCategoryClick(TaskCategoryEnum category) {
+    public void onTaskCategoryClick(Category category) {
         taskCategory = category;
-        switch (taskCategory){
-            case DEFAULT:
-                categoryButton.setImageResource(R.drawable.btn_default_category);
-                break;
-            case WORK:
-                categoryButton.setImageResource(R.drawable.btn_work_category);
-                break;
-            case SCHOOL:
-                categoryButton.setImageResource(R.drawable.btn_school_category);
-                break;
-            case EXERCISE:
-                categoryButton.setImageResource(R.drawable.btn_fitness_category);
-                break;
-            case PERSONAL:
-                categoryButton.setImageResource(R.drawable.btn_person_category);
-                break;
-            case RELAX:
-                categoryButton.setImageResource(R.drawable.btn_relax_category);
-                break;
-            default:
-                categoryButton.setImageResource(R.drawable.btn_default_category);
-                break;
-        }
+        categoryButton.setImageResource(taskCategory.getIconId());
+        categoryButton.setColorFilter(Color.parseColor(taskCategory.color));
+
     }
 
     @Override

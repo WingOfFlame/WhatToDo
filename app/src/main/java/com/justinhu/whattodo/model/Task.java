@@ -1,7 +1,5 @@
 package com.justinhu.whattodo.model;
 
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 
 import java.io.Serializable;
@@ -22,7 +20,7 @@ public class Task implements Comparable, Serializable {
 
     private int id;
     public String name;
-    public TaskCategoryEnum category;
+    public String category;
     public int priority;
     public boolean trackable;
     public int countDown;
@@ -32,7 +30,7 @@ public class Task implements Comparable, Serializable {
     private boolean isSeperator;
 
 
-    public Task(String name, TaskCategoryEnum category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
+    public Task(String name, String category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
         if (name.equals("")) {
             name = DEFAULT_TITLE;
         }
@@ -53,13 +51,12 @@ public class Task implements Comparable, Serializable {
         return "Name:"+this.name;
     }
 
-    private Task(TaskCategoryEnum category) {
-        this.name = category.name();
+    private Task(String category) {
         this.category = category;
         this.isSeperator = true;
     }
 
-    public static Task Separator(TaskCategoryEnum category) {
+    public static Task SeparatorInstance(String category) {
         return new Task(category);
     }
 
@@ -94,7 +91,7 @@ public class Task implements Comparable, Serializable {
             return dateOrder;
         }
         if(useCategory){
-            return otherTask.priority * otherTask.category.getLevel() - this.priority * this.category.getLevel();
+            return otherTask.priority * Category.lookupTable.get(otherTask.category).getPriority() - this.priority * Category.lookupTable.get(this.category).getPriority();
         }
 
         return otherTask.priority  - this.priority;

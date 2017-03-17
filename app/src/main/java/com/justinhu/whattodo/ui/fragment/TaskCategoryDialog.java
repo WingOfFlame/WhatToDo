@@ -1,5 +1,6 @@
 package com.justinhu.whattodo.ui.fragment;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -11,13 +12,14 @@ import android.view.View;
 import android.widget.Button;
 
 import com.justinhu.whattodo.R;
+import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.TaskCategoryEnum;
 
 /**
  * Created by justinhu on 2017-02-22.
  */
 
-public class TaskCategoryDialogFragment extends DialogFragment implements View.OnClickListener {
+public class TaskCategoryDialog extends DialogFragment implements View.OnClickListener {
     private Button defaultButton;
     private Button workButton;
     private Button schoolButton;
@@ -26,18 +28,16 @@ public class TaskCategoryDialogFragment extends DialogFragment implements View.O
     private Button relaxButton;
 
     private TaskCategoryDialogListener listener;
-    private TaskCategoryEnum category = TaskCategoryEnum.DEFAULT;
 
     public interface TaskCategoryDialogListener {
-        public void onTaskCategoryClick(TaskCategoryEnum category);
+        public void onTaskCategoryClick(Category category);
     }
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
+        @SuppressLint("InflateParams")
         View view = inflater.inflate(R.layout.dialog_select_category, null);
 
         defaultButton = (Button) view.findViewById(R.id.button_default);
@@ -60,8 +60,7 @@ public class TaskCategoryDialogFragment extends DialogFragment implements View.O
         builder.setTitle("Category");
         builder.setNegativeButton("USE DEFAUT CATEGORY", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        category = TaskCategoryEnum.DEFAULT;
-                        listener.onTaskCategoryClick(category);
+                        listener.onTaskCategoryClick(Category.getDefaultCategory());
                     }
                 });
         // Create the AlertDialog object and return it
@@ -70,22 +69,21 @@ public class TaskCategoryDialogFragment extends DialogFragment implements View.O
 
     @Override
     public void onClick(View v) {
-
-        if (v == defaultButton){
-            category = TaskCategoryEnum.DEFAULT;
-        }else if (v == workButton){
-            category = TaskCategoryEnum.WORK;
+        Category c;
+         if (v == workButton){
+            c = Category.getCategory(Category.NAME_WORK);
         }else if(v == schoolButton){
-            category= TaskCategoryEnum.SCHOOL;
+            c = Category.getCategory(Category.NAME_STUDY);
         }else if(v == exerciseButton){
-            category = TaskCategoryEnum.EXERCISE;
+            c = Category.getCategory(Category.NAME_WORKOUT);
         }else if(v == personalButton){
-            category = TaskCategoryEnum.PERSONAL;
+            c = Category.getCategory(Category.NAME_PERSONAL);
         }else if(v == relaxButton){
-            category = TaskCategoryEnum.RELAX;
-        }
-
-        listener.onTaskCategoryClick(category);
+            c = Category.getCategory(Category.NAME_RELAX);
+        }else{
+            c = Category.getCategory(Category.NAME_DEFAULT);
+         }
+        listener.onTaskCategoryClick(c);
         dismiss();
 
     }

@@ -10,7 +10,7 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:text="Work"
+            android:text="@string/string_category_work"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button_work"
@@ -21,7 +21,7 @@
             android:layout_margin="8dp" />
 
         <Button
-            android:text="School"
+            android:text="@string/string_category_study"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button_school"
@@ -32,7 +32,7 @@
             android:layout_margin="8dp" />
 
         <Button
-            android:text="Default"
+            android:text="@string/string_category_default"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button_default"
@@ -49,7 +49,7 @@
         android:layout_height="wrap_content">
 
         <Button
-            android:text="Exercise"
+            android:text="@string/string_category_workout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button_exercise"
@@ -60,7 +60,7 @@
             android:layout_margin="8dp" />
 
         <Button
-            android:text="Personal"
+            android:text="@string/string_category_personal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button_personal"
@@ -71,7 +71,7 @@
             android:layout_margin="8dp" />
 
         <Button
-            android:text="Relax"
+            android:text="@string/string_category_relax"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button_relax"

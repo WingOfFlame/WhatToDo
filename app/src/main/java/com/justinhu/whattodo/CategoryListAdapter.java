@@ -77,35 +77,9 @@ public class CategoryListAdapter extends RecyclerView.Adapter<CategoryListAdapte
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final Category item = mDataset.get(position);
         if(item.getIsDefault() == 1){
-            try {
-                Class res = R.drawable.class;
-                Field field = res.getField(item.icon);
-                int drawableId = field.getInt(null);
-                holder.mIconView.setImageResource(drawableId);
-            }
-            catch (Exception e) {
-                Log.e(TAG, "Failure to get drawable id.", e);
-            }
-            try {
-                Class res = R.color.class;
-                Field field = res.getField(item.color);
-                int colorId = field.getInt(null);
-                holder.mIconView.setColorFilter(colorId);
-            }
-            catch (Exception e) {
-                Log.e(TAG, "Failure to get color id.", e);
-            }
-
-            try {
-                Class res = R.string.class;
-                Field field = res.getField(item.name);
-                int stringId = field.getInt(null);
-                holder.mTextView.setText(stringId);
-            }
-            catch (Exception e) {
-                Log.e(TAG, "Failure to get string id.", e);
-            }
-
+            holder.mIconView.setImageResource(item.getIconId());
+            holder.mIconView.setColorFilter(Color.parseColor(item.color));
+            holder.mTextView.setText(item.getDisplayNameId());
         }
         holder.mHandleView.setOnTouchListener(new View.OnTouchListener() {
             @Override

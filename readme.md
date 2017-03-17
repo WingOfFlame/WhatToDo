@@ -3,8 +3,10 @@ https://guides.codepath.com/android/Using-DialogFragment
 TODO:
 - sub task
 - empty view for 'overdue' filter
+- x button when click edit
 - notification for current task
-- configure category order and add user defined category
+- user defined category
+- category order as preference class
 - update test
 - color and icon
 - embed taskselector in main activity and optimize (keep history in last 24hr)

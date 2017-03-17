@@ -57,29 +57,19 @@
     <string name="title_activity_settings">Settings</string>
 
     <!-- Strings related to Settings -->
-    <string name="title_activity_category">Category</string>
-    <string name="pref_category_priority">Change category priority</string>
-    <string name="pref_summ_category_switch">Tasks are displayed and suggested based on the priority of their category.</string>
-
-    <!-- Example General settings -->
     <string name="pref_header_general">General</string>
-
+    <string name="title_activity_category">Category</string>
+    <string name="pref_category_priority">Category priority</string>
+    <string name="pref_summ_category_priority">Categories with high priority are displayed first</string>
     <string name="pref_title_category_switch">Enable category priority</string>
+    <string name="pref_summ_category_switch">Category priority also affects task suggestion.</string>
 
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
 
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
+
+
+
+
+
 
 
 

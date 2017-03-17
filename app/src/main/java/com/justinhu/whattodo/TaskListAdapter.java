@@ -1,7 +1,7 @@
 package com.justinhu.whattodo;
 
 import android.content.Context;
-import android.database.Cursor;
+import android.graphics.Color;
 import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,8 +10,8 @@ import android.widget.ArrayAdapter;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.Task;
-import com.justinhu.whattodo.model.TaskCategoryEnum;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -26,6 +26,8 @@ import java.util.List;
  */
 
 public class TaskListAdapter extends ArrayAdapter<Task> {
+    private static int colorWarn = 0;
+    private static String deadlineLabel = "";
     private Context mContext;
     private static Date currentTime;
 
@@ -40,6 +42,8 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
     public TaskListAdapter(Context mContext) {
         super(mContext,0);
         this.mContext = mContext;
+        colorWarn = ContextCompat.getColor(mContext, R.color.colorWarn);
+        deadlineLabel = mContext.getResources().getString(R.string.label_due, "*");
     }
 
 
@@ -103,63 +107,24 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
             holder = (TaskViewHolder) convertView.getTag();
         }
 
-
-        holder.populateView(this.mContext, task);
-
+        if(task != null) {
+            Category c = Category.lookupTable.get(task.category);
+            holder.populateView(c, task);
+        }
 
         return convertView;
     }
 
-    public void addFromCursor(Cursor cursor) {
-        Calendar newDate = Calendar.getInstance();
-        newDate.add(Calendar.HOUR, -30);
-        currentTime = newDate.getTime();
 
-        List<List<Task>> group = new ArrayList<List<Task>>(6);
-        for (int i =0; i <6; i++){
-            group.add(new ArrayList<Task>());
-        }
-        cursor.moveToPosition(-1);
-        while (cursor.moveToNext()) {
-            String name = cursor.getString(1);
-            TaskCategoryEnum category = TaskCategoryEnum.valueOf(cursor.getString(2));
-            int priority = cursor.getInt(3);
-            boolean trackable = cursor.getInt(4) == 1;
-            int countDown = cursor.getInt(5);
-            int countUp = cursor.getInt(6);
-            String deadline = cursor.getString(7);
-            Task task = new Task(name,
-                    category,
-                    priority,
-                    trackable,
-                    countDown,
-                    countUp,
-                    deadline);
-            task.setId(cursor.getInt(0));
-            group.get(category.getLevel() - 1).add(task);
-        }
-
-        List<Task> flatten = new ArrayList<>();
-        for (TaskCategoryEnum category : TaskCategoryEnum.values()) {
-            List<Task> list = group.get(category.getLevel() - 1);
-            if (!list.isEmpty()) {
-                Collections.sort(list);
-                flatten.add(Task.Separator(category));
-                flatten.addAll(list);
-            }
-        }
-        clear();
-        addAll(flatten);
-    }
 
 
     public int addFromList(List<Task> taskList, int filter) {
         Calendar newDate = Calendar.getInstance();
         newDate.add(Calendar.HOUR, -30);
         currentTime = newDate.getTime();
-
-        List<List<Task>> group = new ArrayList<List<Task>>(6);
-        for (int i = 0; i < 6; i++) {
+        int length =Category.lookupTable.size();
+        List<List<Task>> group = new ArrayList<List<Task>>(length);
+        for (int i = 0; i < length; i++) {
             group.add(new ArrayList<Task>());
         }
 
@@ -170,14 +135,16 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
             if (filter == LIST_FILTER_ONTIME && t.getDeadlineOrigin().compareTo(currentTime) < 0) {
                 continue;
             }
-            group.get(t.category.getLevel() - 1).add(t);
+            Category c = Category.lookupTable.get(t.category);
+            group.get(length - c.getPriority()).add(t);
         }
         List<Task> flatten = new ArrayList<>();
-        for (TaskCategoryEnum category : TaskCategoryEnum.values()){
-            List<Task> list = group.get(category.getLevel() - 1);
+
+        for (List<Task> list : group){
             if(!list.isEmpty()){
                 Collections.sort(list);
-                flatten.add(Task.Separator(category));
+                String categoryName = list.get(0).category;
+                flatten.add(Task.SeparatorInstance(categoryName));
                 flatten.addAll(list);
             }
         }
@@ -191,7 +158,7 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         View self;
         TextView name;
 
-        public void populateView(Context mContext, Task task) {
+        public void populateView(Category c,Task task) {
             name.setText(task.name);
         };
     }
@@ -199,32 +166,11 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
     private static class TaskSeparatorViewHolder extends TaskViewHolder{
 
         @Override
-        public void populateView(Context mContext, Task task) {
-            super.populateView(mContext, task);
-            switch (task.category) {
-                    case DEFAULT:
+        public void populateView(Category c, Task task) {
+            super.populateView(c,task);
+            name.setText(c.getDisplayNameId());
+            name.setBackgroundColor(Color.parseColor(c.color));
 
-                        name.setBackgroundResource(R.color.defaultGrey);
-                        break;
-                    case WORK:
-                        name.setBackgroundResource(R.color.workRed);
-                        break;
-                    case SCHOOL:
-                        name.setBackgroundResource(R.color.schoolOrange);
-                        break;
-                    case EXERCISE:
-                        name.setBackgroundResource(R.color.exercisesTeal);
-                        break;
-                    case PERSONAL:
-                        name.setBackgroundResource(R.color.personalGreen);
-                        break;
-                    case RELAX:
-                        name.setBackgroundResource(R.color.relaxLightGreen);
-                        break;
-                    default:
-                        name.setBackgroundResource(R.color.defaultGrey);
-                        break;
-                }
         }
     }
 
@@ -234,8 +180,8 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         TextView repetition;
 
         @Override
-        public void populateView(Context mContext, Task task) {
-            super.populateView(mContext, task);
+        public void populateView(Category c, Task task) {
+            super.populateView(c, task);
             priority.setRating(task.priority);
 
             if (task.trackable) {
@@ -246,11 +192,10 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
             }
 
             if (task.getDeadlineOrigin().compareTo(currentTime) < 0) {
-                self.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWarn));
+                self.setBackgroundColor(colorWarn);
                 deadline.setText(R.string.label_overdue);
             } else {
-                String deadlineLabel = mContext.getResources().getString(R.string.label_due, task.getDeadline());
-                deadline.setText(deadlineLabel);
+                deadline.setText(deadlineLabel.replace("*",task.getDeadline()));
             }
         }
     }

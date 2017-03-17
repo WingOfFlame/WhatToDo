@@ -3,6 +3,7 @@ package com.justinhu.whattodo.ui.activity;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
@@ -56,10 +57,8 @@ public class CategorySettingActivity extends AppCompatActivity implements  Loade
     private CategoryListAdapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
     private ItemTouchHelper mItemTouchHelper;
-    List<Category> mList= new ArrayList<>();
     String[] myDataset;
     private CategoryDBHelper mCategoryDBHelper;
-    Gson g = new Gson();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -115,7 +114,9 @@ public class CategorySettingActivity extends AppCompatActivity implements  Loade
     protected void onDestroy() {
         Log.i(TAG, "onDestroy");
         super.onDestroy();
-        mCategoryDBHelper.saveCategory(mAdapter.getResults());
+        List<Category> data = mAdapter.getResults();
+        Category.updateLookupTable(data);
+        mCategoryDBHelper.saveCategory(data);
     }
 
 
@@ -151,22 +152,13 @@ public class CategorySettingActivity extends AppCompatActivity implements  Loade
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         Log.i(TAG, "onLoadFinished");
-        List<Category> data = new ArrayList<>();
-        while (cursor.moveToNext()){
-            Category c = new Category(
-                    cursor.getString(1),
-                    cursor.getString(2),
-                    cursor.getString(3),
-                    cursor.getInt(4),
-                    cursor.getInt(5));
-            c.setId(cursor.getInt(0));
-            data.add(c);
-
-        }
+        List<Category> data =mCategoryDBHelper.getCategoryList(this,cursor);
         mAdapter.addData(data);
         emprtView.setVisibility(View.GONE);
         mRecyclerView.setVisibility(View.VISIBLE);
     }
+
+
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {

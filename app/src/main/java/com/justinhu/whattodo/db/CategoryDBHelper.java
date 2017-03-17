@@ -8,9 +8,19 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+import com.justinhu.whattodo.R;
 import com.justinhu.whattodo.model.Category;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.justinhu.whattodo.model.Category.NAME_DEFAULT;
+import static com.justinhu.whattodo.model.Category.NAME_PERSONAL;
+import static com.justinhu.whattodo.model.Category.NAME_RELAX;
+import static com.justinhu.whattodo.model.Category.NAME_STUDY;
+import static com.justinhu.whattodo.model.Category.NAME_WORK;
+import static com.justinhu.whattodo.model.Category.NAME_WORKOUT;
 
 /**
  * Created by justinhu on 2017-03-12.
@@ -72,7 +82,7 @@ public class CategoryDBHelper extends SQLiteOpenHelper {
 
     private void loadInDefault(SQLiteDatabase db) {
         ContentValues workCategory = new ContentValues();
-        workCategory.put(CategoryEntry.COLUMN_NAME_NAME, "string_category_work");
+        workCategory.put(CategoryEntry.COLUMN_NAME_NAME, NAME_WORK);
         workCategory.put(CategoryEntry.COLUMN_NAME_COLOR, "#F44336");
         workCategory.put(CategoryEntry.COLUMN_NAME_ICON, "ic_category_work");
         workCategory.put(CategoryEntry.COLUMN_NAME_PRIORITY, 6);
@@ -80,7 +90,7 @@ public class CategoryDBHelper extends SQLiteOpenHelper {
         db.insert(CategoryEntry.TABLE_NAME, null, workCategory);
 
         ContentValues studyCategory = new ContentValues();
-        studyCategory.put(CategoryEntry.COLUMN_NAME_NAME, "string_category_study");
+        studyCategory.put(CategoryEntry.COLUMN_NAME_NAME, NAME_STUDY);
         studyCategory.put(CategoryEntry.COLUMN_NAME_COLOR, "#FF9800");
         studyCategory.put(CategoryEntry.COLUMN_NAME_ICON, "ic_category_study");
         studyCategory.put(CategoryEntry.COLUMN_NAME_PRIORITY, 5);
@@ -89,7 +99,7 @@ public class CategoryDBHelper extends SQLiteOpenHelper {
 
 
         ContentValues defaultCategory = new ContentValues();
-        defaultCategory.put(CategoryEntry.COLUMN_NAME_NAME, "string_category_default");
+        defaultCategory.put(CategoryEntry.COLUMN_NAME_NAME, NAME_DEFAULT);
         defaultCategory.put(CategoryEntry.COLUMN_NAME_COLOR, "#9E9E9E");
         defaultCategory.put(CategoryEntry.COLUMN_NAME_ICON, "ic_category_default");
         defaultCategory.put(CategoryEntry.COLUMN_NAME_PRIORITY, 4);
@@ -97,7 +107,7 @@ public class CategoryDBHelper extends SQLiteOpenHelper {
         db.insert(CategoryEntry.TABLE_NAME, null, defaultCategory);
 
         ContentValues workoutCategory = new ContentValues();
-        workoutCategory.put(CategoryEntry.COLUMN_NAME_NAME, "string_category_workout");
+        workoutCategory.put(CategoryEntry.COLUMN_NAME_NAME, NAME_WORKOUT);
         workoutCategory.put(CategoryEntry.COLUMN_NAME_COLOR, "#009688");
         workoutCategory.put(CategoryEntry.COLUMN_NAME_ICON, "ic_category_workout");
         workoutCategory.put(CategoryEntry.COLUMN_NAME_PRIORITY, 3);
@@ -105,7 +115,7 @@ public class CategoryDBHelper extends SQLiteOpenHelper {
         db.insert(CategoryEntry.TABLE_NAME, null, workoutCategory);
 
         ContentValues personalCategory = new ContentValues();
-        personalCategory.put(CategoryEntry.COLUMN_NAME_NAME, "string_category_personal");
+        personalCategory.put(CategoryEntry.COLUMN_NAME_NAME, NAME_PERSONAL);
         personalCategory.put(CategoryEntry.COLUMN_NAME_COLOR, "#4CAF50");
         personalCategory.put(CategoryEntry.COLUMN_NAME_ICON, "ic_category_personal");
         personalCategory.put(CategoryEntry.COLUMN_NAME_PRIORITY, 2);
@@ -113,7 +123,7 @@ public class CategoryDBHelper extends SQLiteOpenHelper {
         db.insert(CategoryEntry.TABLE_NAME, null, personalCategory);
 
         ContentValues relaxCategory = new ContentValues();
-        relaxCategory.put(CategoryEntry.COLUMN_NAME_NAME, "string_category_relax");
+        relaxCategory.put(CategoryEntry.COLUMN_NAME_NAME, NAME_RELAX);
         relaxCategory.put(CategoryEntry.COLUMN_NAME_COLOR, "#8BC34A");
         relaxCategory.put(CategoryEntry.COLUMN_NAME_ICON, "ic_category_relax");
         relaxCategory.put(CategoryEntry.COLUMN_NAME_PRIORITY, 1);
@@ -137,6 +147,48 @@ public class CategoryDBHelper extends SQLiteOpenHelper {
         Log.i(TAG,"Return category cursor: "+cursor.toString());
 
         return cursor;
+    }
+
+    public List<Category> getCategoryList(Context context,Cursor cursor) {
+        List<Category> data = new ArrayList<>();
+        while (cursor.moveToNext()) {
+            String name = cursor.getString(1);
+            Category c = Category.lookupTable.get(name);
+            if (c != null){
+                data.add(c);
+                continue;
+            }
+            c = new Category(
+                    name,
+                    cursor.getString(2),
+                    cursor.getString(3),
+                    cursor.getInt(4),
+                    cursor.getInt(5));
+            c.setId(cursor.getInt(0));
+            if (c.getIsDefault() == 1) {
+                try {
+                    Class res = R.string.class;
+                    Field field = res.getField(c.name);
+                    int stringId = field.getInt(null);
+                    c.setDisplayNameId(stringId);
+                } catch (Exception e) {
+                    Log.e(TAG, "Failure to get string id.", e);
+                }
+                try {
+                    Class res = R.drawable.class;
+                    Field field = res.getField(c.icon);
+                    int drawableId = field.getInt(null);
+                    c.setIconId(drawableId);
+                }
+                catch (Exception e) {
+                    Log.e(TAG, "Failure to get drawable id.", e);
+                }
+
+            }
+            data.add(c);
+        }
+        cursor.close();
+        return data;
     }
 
     public void saveCategory(List<Category> results) {

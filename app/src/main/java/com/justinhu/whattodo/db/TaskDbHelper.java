@@ -92,7 +92,7 @@ public class TaskDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase mDb = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TaskEntry.COLUMN_NAME_NAME, newTask.name);
-        values.put(TaskEntry.COLUMN_NAME_CATEGORY, newTask.category.name());
+        values.put(TaskEntry.COLUMN_NAME_CATEGORY, newTask.category);
         values.put(TaskEntry.COLUMN_NAME_PRIORITY, newTask.priority);
         values.put(TaskEntry.COLUMN_NAME_TRACKABLE, newTask.trackable ? 1 : 0);
         values.put(TaskEntry.COLUMN_NAME_COUNTDOWN, newTask.countDown);
