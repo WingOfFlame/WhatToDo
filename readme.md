@@ -4,7 +4,7 @@ TODO:
 - sub task
 - empty view for 'overdue' filter
 - x button when click edit
-- notification for current task
+- polish notification for current task
 - user defined category
 - category order as preference class
 - update test

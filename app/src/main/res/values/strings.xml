@@ -23,6 +23,7 @@
         <item>On Time</item>
         <item>Overdue</item>
     </string-array>
+    <string name="select_task">Select Tasks</string>
 
     <string name="btn_get_task">What to do?</string>
 

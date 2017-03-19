@@ -1,6 +1,9 @@
 package com.justinhu.whattodo.ui.activity;
 
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -15,9 +18,11 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -36,23 +41,24 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.justinhu.whattodo.R;
+import com.justinhu.whattodo.TaskListAdapter;
+import com.justinhu.whattodo.TaskSelector;
 import com.justinhu.whattodo.db.CategoryDBHelper;
 import com.justinhu.whattodo.db.TaskDbHelper;
-import com.justinhu.whattodo.R;
 import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.Task;
 import com.justinhu.whattodo.ui.fragment.TaskDialog;
-import com.justinhu.whattodo.TaskListAdapter;
-import com.justinhu.whattodo.TaskSelector;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements TaskDialog.NewTaskDialogListener, LoaderManager.LoaderCallbacks<Cursor>, View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
     public static final String CURRENT_TASK = "currentTask";
+    private static final String TAG = "MainActivity";
+    private static final int ONGOING_TASK_NOTIFICATION = 0;
     List<Task> mDataCopy;
     TaskDbHelper mTaskDbHelper;
-    private Cursor oldCursor;
     String[] filterValue;
 
     //TextView mTitle;
@@ -61,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
     TaskListAdapter mtaskListAdapter;
     View bottomSheetShadow;
     CoordinatorLayout ongoingTask;
-    private BottomSheetBehavior bottomSheetBehavior;
     TextView taskName;
     ImageView taskCategory;
     RatingBar taskPriority;
@@ -69,20 +74,17 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
     TextView taskDeadline;
     Button taskAbort;
     Button taskDid;
-
     Button randomSelect;
-
     Task currentTask = null;
-
+    SharedPreferences storage;
+    private Cursor oldCursor;
+    private BottomSheetBehavior bottomSheetBehavior;
     private FragmentManager fragmentManager;
     private FloatingActionButton fab;
-
-    SharedPreferences storage;
-
-    private static final String TAG = "MainActivity";
     private int lastFilter = 0;
     private boolean needRefresh = false;
     private CategoryDBHelper mCategoryDBHelper;
+    private NotificationManager mNotificationManager;
 
 
     @Override
@@ -92,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
 
         initConfig();
 
+        mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -124,7 +127,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         filter.setAdapter(adapter);
         filter.setOnItemSelectedListener(this);
 
-        View emptyView=findViewById(R.id.list_empty);
+        View emptyView = findViewById(R.id.list_empty);
         //Empty view is set here
         taskList.setEmptyView(emptyView);
         mtaskListAdapter = new TaskListAdapter(this);
@@ -151,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                if(slideOffset >=0){
+                if (slideOffset >= 0) {
                     fab.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
                 }
             }
@@ -167,7 +170,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         // Restore preferences
         storage = getPreferences(MODE_PRIVATE);
         String currentTaskStr = storage.getString(CURRENT_TASK, null);
-        if(currentTaskStr != null){
+        if (currentTaskStr != null) {
             Gson g = new Gson();
             currentTask = g.fromJson(currentTaskStr, Task.class);
             updateBottomSheet();
@@ -175,18 +178,26 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
 
     }
 
-    void initConfig(){
+    void initConfig() {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
         PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
         Task.useCategory = sharedPref.getBoolean(SettingsActivity.KEY_PREF_CATEGORY, false);
 
         mTaskDbHelper = TaskDbHelper.getInstance(MainActivity.this);
-        mCategoryDBHelper  = CategoryDBHelper.getInstance(MainActivity.this);
+        mCategoryDBHelper = CategoryDBHelper.getInstance(MainActivity.this);
 
         Cursor cursor = mCategoryDBHelper.getCategory();
-        List<Category> data = mCategoryDBHelper.getCategoryList(this,cursor);
+        List<Category> data = mCategoryDBHelper.getCategoryList(this, cursor);
         Category.updateLookupTable(data);
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.i(TAG, "onNewIntent");
+        bottomSheetBehavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+    }
+
     @Override
     protected void onStart() {
         Log.i(TAG, "onStart");
@@ -203,9 +214,6 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
     protected void onResume() {
         Log.i(TAG, "onResume");
         super.onResume();
-        Log.i(TAG, "fit system windows " + ongoingTask.getFitsSystemWindows());
-
-
     }
 
     @Override
@@ -240,8 +248,6 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             startActivity(new Intent(MainActivity.this, SettingsActivity.class));
-
-            //startActivity(new Intent(MainActivity.this, CategorySettingActivity.class));
             return true;
         } else if (id == R.id.action_save) {
             return false;
@@ -277,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         String currentTaskStr = g.toJson(currentTask);
         prefsEditor.putString(CURRENT_TASK, currentTaskStr);
         prefsEditor.apply();
+        createTaskNotification();
     }
 
     @Override
@@ -302,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         String countLabel;
         if (currentTask.trackable) {
             countLabel = getResources().getQuantityString(R.plurals.label_count_down, currentTask.countDown, currentTask.countDown);
-        }else{
+        } else {
             countLabel = getResources().getQuantityString(R.plurals.label_count_up, currentTask.countUp, currentTask.countUp);
         }
         taskCount.setText(countLabel);
@@ -341,7 +348,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         int added = mtaskListAdapter.addFromList(mDataCopy, lastFilter);
         if (added > 0) {
             randomSelect.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             randomSelect.setVisibility(View.GONE);
         }
         oldCursor = cursor;
@@ -371,8 +378,8 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
             Bundle args = new Bundle();
             args.putInt(TaskDialog.ARGS_KEY_MODE, TaskDialog.TASK_DIALOG_MODE_NEW);
             spawnTaskDialog(args);
-        }else if (v == taskAbort || v == taskDid){
-            if(v == taskDid){
+        } else if (v == taskAbort || v == taskDid) {
+            if (v == taskDid) {
                 onTaskDid();
             }
             clearCurrentTask();
@@ -389,6 +396,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         SharedPreferences.Editor prefsEditor = storage.edit();
         prefsEditor.remove(CURRENT_TASK);
         prefsEditor.apply();
+        mNotificationManager.cancel(ONGOING_TASK_NOTIFICATION);
     }
 
     private void onTaskDid() {
@@ -488,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         @Override
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             getMenuInflater().inflate(R.menu.task_select_menu, menu);
-            mode.setTitle("Select Items");
+            mode.setTitle(R.string.select_task);
             return true;
         }
 
@@ -521,11 +529,11 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
                         for (int i = 0; i < checkedItems.size(); i++) {
                             if (checkedItems.valueAt(i)) {
                                 Task selecteditem = mtaskListAdapter.getItem(checkedItems.keyAt(i));
-                                if(selecteditem != null){
+                                if (selecteditem != null) {
                                     // Remove selected items following the
                                     toDelete.add(String.valueOf(selecteditem.getId()));
-                                }else{
-                                    Log.w(TAG,String.format("Deleting selected item at position %d but adapter returns null",checkedItems.keyAt(i)));
+                                } else {
+                                    Log.w(TAG, String.format("Deleting selected item at position %d but adapter returns null", checkedItems.keyAt(i)));
                                 }
 
                             }
@@ -579,5 +587,25 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
             }
         }
 
+    }
+
+    private void createTaskNotification(){
+        NotificationCompat.Builder mBuilder =
+                (NotificationCompat.Builder) new NotificationCompat.Builder(this)
+                        .setSmallIcon(R.drawable.ic_live_help_black_24dp)
+                        .setContentTitle("Task in progress")
+                        .setContentText(currentTask.name)
+                .setAutoCancel(false).setOngoing(true);
+// Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, MainActivity.class);
+        resultIntent.setAction(Intent.ACTION_MAIN);
+        resultIntent.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(this,0,resultIntent,PendingIntent.FLAG_UPDATE_CURRENT);
+
+        mBuilder.setContentIntent(resultPendingIntent);
+// mId allows you to update the notification later on.
+        mNotificationManager.notify(ONGOING_TASK_NOTIFICATION, mBuilder.build());
     }
 }
