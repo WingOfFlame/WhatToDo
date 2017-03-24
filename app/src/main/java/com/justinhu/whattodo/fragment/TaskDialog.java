@@ -1,4 +1,4 @@
-package com.justinhu.whattodo.ui.fragment;
+package com.justinhu.whattodo.fragment;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;

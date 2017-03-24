@@ -1,4 +1,4 @@
-package com.justinhu.whattodo.ui.activity;
+package com.justinhu.whattodo.activity;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

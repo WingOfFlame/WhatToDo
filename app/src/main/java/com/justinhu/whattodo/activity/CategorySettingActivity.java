@@ -1,14 +1,11 @@
-package com.justinhu.whattodo.ui.activity;
+package com.justinhu.whattodo.activity;
 
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
+import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
@@ -16,18 +13,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.google.gson.Gson;
-import com.justinhu.whattodo.db.CategoryDBHelper;
-import com.justinhu.whattodo.model.Category;
-import com.justinhu.whattodo.ui.fragment.CategoryDialog;
 import com.justinhu.whattodo.CategoryListAdapter;
 import com.justinhu.whattodo.CategoryListItemTouchHelperCallback;
 import com.justinhu.whattodo.R;
+import com.justinhu.whattodo.db.CategoryDBHelper;
+import com.justinhu.whattodo.fragment.CategoryDialog;
+import com.justinhu.whattodo.model.Category;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /*https://medium.com/@ipaulpro/drag-and-swipe-with-recyclerview-b9456d2b1aaf#.xd1fovhdu
 

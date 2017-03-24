@@ -15,5 +15,5 @@
         android:id="@+id/category_color"
         android:layout_width="match_parent"
         android:layout_height="32dp"
-        android:background="@color/btn_Positive"/>
+        android:background="@color/btnPositive" />
 </LinearLayout>

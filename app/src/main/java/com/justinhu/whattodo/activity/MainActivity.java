@@ -1,4 +1,4 @@
-package com.justinhu.whattodo.ui.activity;
+package com.justinhu.whattodo.activity;
 
 
 import android.app.NotificationManager;
@@ -13,17 +13,17 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.LoaderManager;
-import android.support.v4.app.TaskStackBuilder;
 import android.support.v4.content.AsyncTaskLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
@@ -40,15 +40,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.github.clans.fab.FloatingActionButton;
 import com.google.gson.Gson;
+import com.justinhu.whattodo.MyFabMenu;
 import com.justinhu.whattodo.R;
 import com.justinhu.whattodo.TaskListAdapter;
 import com.justinhu.whattodo.TaskSelector;
 import com.justinhu.whattodo.db.CategoryDBHelper;
 import com.justinhu.whattodo.db.TaskDbHelper;
+import com.justinhu.whattodo.fragment.TaskDialog;
 import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.Task;
-import com.justinhu.whattodo.ui.fragment.TaskDialog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +82,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
     private Cursor oldCursor;
     private BottomSheetBehavior bottomSheetBehavior;
     private FragmentManager fragmentManager;
-    private FloatingActionButton fab;
+    private MyFabMenu fabMenu;
+    private FloatingActionButton fabAddTask;
+    private FloatingActionButton fabAddGoal;
+    private FloatingActionButton fabAddHabbit;
     private int lastFilter = 0;
     private boolean needRefresh = false;
     private CategoryDBHelper mCategoryDBHelper;
@@ -101,7 +106,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         //mTitle = (TextView) toolbar.findViewById(R.id.toolbar_title);
         filter = (Spinner) toolbar.findViewById(R.id.toolbar_filter);
         taskList = (ListView) findViewById(R.id.taskList);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fabMenu = (MyFabMenu) findViewById(R.id.fab_menu);
+        fabAddTask = fabMenu.getMenuButton();
+        fabAddGoal = (FloatingActionButton) findViewById(R.id.fab_goal);
+        fabAddHabbit = (FloatingActionButton) findViewById(R.id.fab_habbit);
         randomSelect = (Button) findViewById(R.id.select);
         bottomSheetShadow = findViewById(R.id.shadow);
         ongoingTask = (CoordinatorLayout) findViewById(R.id.view_ongoing_task);
@@ -136,7 +144,11 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         taskList.setOnItemClickListener(this);
 
         fragmentManager = getSupportFragmentManager();
-        fab.setOnClickListener(this);
+        //fabMenu.setOnClickListener(this);
+        ViewCompat.setElevation(fabMenu, 5);
+        fabAddTask.setOnClickListener(this);
+        fabAddHabbit.setOnClickListener(this);
+        fabAddGoal.setOnClickListener(this);
 
         randomSelect.setOnClickListener(this);
         randomSelect.setVisibility(View.GONE);
@@ -146,6 +158,10 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         bottomSheetBehavior = BottomSheetBehavior.from(ongoingTask);
         bottomSheetBehavior.setHideable(true);
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int height = displayMetrics.heightPixels;
+        final int width = displayMetrics.widthPixels;
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull View bottomSheet, int newState) {
@@ -155,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
                 if (slideOffset >= 0) {
-                    fab.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
+                    fabMenu.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
                 }
             }
         });
@@ -374,16 +390,32 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
                 Toast.makeText(MainActivity.this, "No valid task to be selected", Toast.LENGTH_LONG).show();
             }
 
-        } else if (v == fab) {
-            Bundle args = new Bundle();
-            args.putInt(TaskDialog.ARGS_KEY_MODE, TaskDialog.TASK_DIALOG_MODE_NEW);
-            spawnTaskDialog(args);
         } else if (v == taskAbort || v == taskDid) {
             if (v == taskDid) {
                 onTaskDid();
             }
             clearCurrentTask();
+        } else if (v == fabAddTask) {
+            if (fabMenu.isOpened()) {
+                // We will change the icon when the menu opens, here we want to change to the previous icon
+                Toast.makeText(MainActivity.this, "TASK clicked", Toast.LENGTH_SHORT).show();
+                Bundle args = new Bundle();
+                args.putInt(TaskDialog.ARGS_KEY_MODE, TaskDialog.TASK_DIALOG_MODE_NEW);
+                spawnTaskDialog(args);
+                fabMenu.close(false);
+            } else {
+                // Since it is closed, let's set our new icon and then open the menu
+                //fabMenu.getMenuIconView().setImageDrawable(drawableManager.getDrawable(getActivity(), R.drawable.ic_edit_24dp));
+                fabMenu.open(true);
+            }
+        } else if (v == fabAddGoal) {
+            Toast.makeText(MainActivity.this, "GOAL clicked", Toast.LENGTH_SHORT).show();
+            fabMenu.close(false);
+        } else if (v == fabAddHabbit) {
+            Toast.makeText(MainActivity.this, "HABBIT clicked", Toast.LENGTH_SHORT).show();
+            fabMenu.close(false);
         }
+
     }
 
     private void clearCurrentTask() {

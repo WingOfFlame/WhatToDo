@@ -1,4 +1,4 @@
-package com.justinhu.whattodo.ui.fragment;
+package com.justinhu.whattodo.fragment;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -13,7 +13,6 @@ import android.widget.Button;
 
 import com.justinhu.whattodo.R;
 import com.justinhu.whattodo.model.Category;
-import com.justinhu.whattodo.model.TaskCategoryEnum;
 
 /**
  * Created by justinhu on 2017-02-22.

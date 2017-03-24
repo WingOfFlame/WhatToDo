@@ -10,7 +10,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by justinhu on 2017-02-24.
  */
-
+@Deprecated
 public class TaskComparatorTest {
     @Test
     public void deadline_comparison(){
