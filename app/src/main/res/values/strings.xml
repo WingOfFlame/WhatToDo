@@ -27,6 +27,11 @@
 
     <string name="btn_get_task">What to do?</string>
 
+    <!--FAB-->
+    <string name="label_goal">Goal</string>
+    <string name="label_habit">Habit</string>
+    <string name="label_task">Task</string>
+
     <!--Task Listview & Bottom Sheet-->
     <string name="label_overdue">Overdue</string>
     <string name="btn_task_did">Did It</string>
@@ -64,14 +69,8 @@
     <string name="pref_summ_category_priority">Categories with high priority are displayed first</string>
     <string name="pref_title_category_switch">Enable category priority</string>
     <string name="pref_summ_category_switch">Category priority also affects task suggestion.</string>
-
-
-
-
-
-
-
-
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 
 
 

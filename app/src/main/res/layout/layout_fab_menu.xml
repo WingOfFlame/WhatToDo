@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.justinhu.whattodo.MyFabMenu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:fab="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/fab_menu"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_alignParentBottom="true"
+    android:layout_alignParentEnd="true"
+    android:paddingStart="0dp"
+    android:paddingEnd="10dp"
+    android:paddingBottom="10dp"
+    fab:menu_labels_ellipsize="end"
+    fab:menu_labels_singleLine="true"
+    fab:menu_backgroundColor="#ccffffff"
+    fab:menu_colorNormal="@color/colorAccent"
+    fab:menu_colorPressed="@color/colorAccent">
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/fab_goal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_goal_white_24dp"
+        fab:fab_label="@string/label_goal"
+        fab:fab_colorNormal="@color/colorAccent"
+        fab:fab_colorPressed="@color/colorAccent" />
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/fab_habbit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_habit_white_24dp"
+        fab:fab_label="@string/label_habit"
+        fab:fab_colorNormal="@color/colorAccent"
+        fab:fab_colorPressed="@color/colorAccent" />
+
+    <com.github.clans.fab.FloatingActionButton
+        android:id="@+id/fab_task"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srcCompat="@drawable/ic_task_white_24dp"
+        fab:fab_label="@string/label_task"
+        fab:fab_colorNormal="@color/colorAccent"
+        fab:fab_colorPressed="@color/colorAccent" />
+</com.justinhu.whattodo.MyFabMenu>
+
+
+

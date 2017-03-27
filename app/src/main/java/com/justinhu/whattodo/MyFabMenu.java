@@ -1,8 +1,7 @@
 package com.justinhu.whattodo;
 
+import android.animation.AnimatorSet;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
 
 import com.github.clans.fab.FloatingActionButton;
@@ -13,8 +12,11 @@ import com.github.clans.fab.FloatingActionMenu;
  */
 
 public class MyFabMenu extends FloatingActionMenu {
-    final Drawable originalImage;
+    //final Drawable closeImage;
+    //final Drawable openImage;
     private FloatingActionButton mMenuButton;
+    private AnimatorSet openSet;
+    private AnimatorSet closeSet;
 
     public MyFabMenu(Context context) {
         this(context, null);
@@ -31,23 +33,21 @@ public class MyFabMenu extends FloatingActionMenu {
     public MyFabMenu(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setClosedOnTouchOutside(true);
-        originalImage = getMenuIconView().getDrawable();
-        mMenuButton = (FloatingActionButton) getChildAt(0);
+        //closeImage = ContextCompat.getDrawable(this.getContext(), R.drawable.ic_add_white_24dp);
 
+        mMenuButton = (FloatingActionButton) getChildAt(0);
 
     }
 
     @Override
     public void open(boolean animate) {
         super.open(animate);
-        getMenuIconView().setImageDrawable(ContextCompat.getDrawable(this.getContext(), R.drawable.ic_arrow_forward_black_24dp));
-
-
+        //getMenuIconView().setImageDrawable(ContextCompat.getDrawable(this.getContext(), R.drawable.ic_task_white_24dp));
     }
 
     @Override
     public void close(boolean animate) {
-        getMenuIconView().setImageDrawable(originalImage);
+        //getMenuIconView().setImageDrawable(originalImage);
         super.close(animate);
     }
 }

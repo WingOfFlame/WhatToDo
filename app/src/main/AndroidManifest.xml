@@ -9,33 +9,33 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".activity.MainActivity"
+            android:name=".Main2Activity"
             android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".activity.SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".activity.MainActivity" />
-
         <activity
             android:name=".activity.CategorySettingActivity"
-            android:label="@string/title_activity_category"
             android:configChanges="orientation"
+            android:label="@string/title_activity_category"
             android:parentActivityName=".activity.SettingsActivity">
             <intent-filter>
                 <action android:name="com.justinhu.whattodo.ui.activity.SettingsActivity" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

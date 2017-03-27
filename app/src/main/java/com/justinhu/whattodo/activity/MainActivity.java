@@ -160,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
         bottomSheetBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int height = displayMetrics.heightPixels;
+        final int height = displayMetrics.heightPixels;
         final int width = displayMetrics.widthPixels;
         bottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
@@ -171,7 +171,9 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
                 if (slideOffset >= 0) {
-                    fabMenu.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
+                    fabAddTask.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
+                    fabMenu.getMenuIconView().animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start();
+                    fabMenu.animate().translationY(height / 2 * slideOffset);
                 }
             }
         });
