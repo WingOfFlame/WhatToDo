@@ -3,7 +3,6 @@ package com.justinhu.whattodo.fragment;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
@@ -19,12 +18,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.RatingBar;
-import android.widget.Switch;
 import android.widget.TextView;
 
 import com.justinhu.whattodo.R;
@@ -32,7 +28,6 @@ import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.Task;
 
 import java.util.Calendar;
-import java.util.Locale;
 
 /**
  * Created by justinhu on 2017-02-21.
@@ -41,7 +36,7 @@ import java.util.Locale;
  *  http://androidopentutorials.com/android-datepickerdialog-on-edittext-click-event/
  */
 
-public class TaskDialog extends DialogFragment implements View.OnClickListener, TaskCategoryDialog.TaskCategoryDialogListener{
+public class TaskDialog extends DialogFragment implements View.OnClickListener {
 
     private static final String TAG = "TaskDialog";
 
@@ -55,12 +50,11 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
 
     private Toolbar toolbar;
     private EditText taskname;
-    private ImageButton categoryButton;
     private RatingBar priority;
-    private Switch trackableSwitch;
-    private View trackableValues;
-    private EditText countDown;
-    private Switch deadlineSwitch;
+    //private Switch trackableSwitch;
+    // private View trackableValues;
+    //private EditText countDown;
+    //private Switch deadlineSwitch;
     private View deadlineValue;
     private TextView deadline;
     private DatePickerDialog deadlinePicker;
@@ -133,28 +127,9 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
         }
         setHasOptionsMenu(true);
 
-        trackableSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked){
-                    trackableValues.setVisibility(View.VISIBLE);
-                }else{
-                    trackableValues.setVisibility(View.GONE);
-                }
-            }
-        });
-        deadlineSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (isChecked) {
-                    deadlineValue.setVisibility(View.VISIBLE);
-                } else {
-                    deadlineValue.setVisibility(View.GONE);
-                }
-            }
-        });
+
         deadline.setOnClickListener(this);
-        categoryButton.setOnClickListener(this);
+        //categoryButton.setOnClickListener(this);
         acceptButton.setOnClickListener(this);
         declineButton.setOnClickListener(this);
         taskDidButton.setOnClickListener(this);
@@ -179,7 +154,6 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
             populateViews();
         }else{
             deadline.setText(Task.dateFormatter.format(newCalendar.getTime()));
-            trackableSwitch.setChecked(true);
         }
 
         if (mode == TASK_DIALOG_MODE_NEW) {
@@ -207,14 +181,13 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
     private void findViews(View rootView){
         toolbar = (Toolbar) rootView.findViewById(R.id.toolbar);
         taskname = (EditText) rootView.findViewById(R.id.taskname);
-        categoryButton = (ImageButton) rootView.findViewById(R.id.task_category);
+        //categoryButton = (ImageButton) rootView.findViewById(R.id.task_category);
         priority = (RatingBar) rootView.findViewById(R.id.priority);
 
-        trackableSwitch = (Switch) rootView.findViewById(R.id.trackable);
-        trackableValues = rootView.findViewById(R.id.view_trackable_value);
-        countDown = (EditText)  rootView.findViewById(R.id.task_count);
+        //trackableValues = rootView.findViewById(R.id.view_trackable_value);
+        //countDown = (EditText)  rootView.findViewById(R.id.task_count);
 
-        deadlineSwitch = (Switch) rootView.findViewById(R.id.has_deadline);
+        //deadlineSwitch = (Switch) rootView.findViewById(R.id.has_deadline);
         deadlineValue = rootView.findViewById(R.id.deadline_value);
         deadline = (TextView) rootView.findViewById(R.id.deadline_input);
 
@@ -229,20 +202,16 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
 
     private void populateViews() {
         taskname.setText(task.name);
-        onTaskCategoryClick(Category.getCategory(task.category));
         priority.setRating(task.priority);
-        trackableSwitch.setChecked(task.trackable);
-        deadlineSwitch.setChecked(!task.getDeadline().equals(Task.DEFAULT_DATE));
-        countDown.setText(String.format (Locale.US,"%d", task.countDown));
+        //deadlineSwitch.setChecked(!task.getDeadline().equals(Task.DEFAULT_DATE));
+        //countDown.setText(String.format (Locale.US,"%d", task.countDown));
         deadline.setText(task.getDeadline());
     }
 
     private void setViewsEnabled(boolean enabled) {
         taskname.setEnabled(enabled);
-        categoryButton.setEnabled(enabled);
         priority.setEnabled(enabled);
-        trackableSwitch.setEnabled(enabled);
-        countDown.setEnabled(enabled);
+        //countDown.setEnabled(enabled);
         deadline.setEnabled(enabled);
         declineButton.setEnabled(!enabled);
         acceptButton.setEnabled(!enabled);
@@ -295,12 +264,10 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
         if (id == R.id.action_save) {
             Task newTask = new Task(
                     taskname.getText().toString(),
-                    taskCategory.getName(),
                     (int)priority.getRating(),
-                    trackableSwitch.isChecked(),
-                    Integer.parseInt(countDown.getText().toString()),
+                    0,//Integer.parseInt(countDown.getText().toString()),
                     0,
-                    (deadlineSwitch.isChecked() && trackableSwitch.isChecked()) ? deadline.getText().toString() : Task.DEFAULT_DATE
+                    Task.DEFAULT_DATE
             );
 
             if (mode == TASK_DIALOG_MODE_NEW) {
@@ -357,10 +324,6 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
     public void onClick(View v) {
         if(v == deadline) {
             deadlinePicker.show();
-        }else if(v == categoryButton){
-            DialogFragment dialog = new TaskCategoryDialog();
-            dialog.setTargetFragment(TaskDialog.this,0);
-            dialog.show(getFragmentManager(), "TaskCategoryDialog");
         }else if(v == declineButton){
             dismiss();
         }else if(v == acceptButton){
@@ -375,13 +338,6 @@ public class TaskDialog extends DialogFragment implements View.OnClickListener, 
         }
     }
 
-    @Override
-    public void onTaskCategoryClick(Category category) {
-        taskCategory = category;
-        categoryButton.setImageResource(taskCategory.getIconId());
-        categoryButton.setColorFilter(Color.parseColor(taskCategory.color));
-
-    }
 
     @Override
     public void onAttach(Context context) {

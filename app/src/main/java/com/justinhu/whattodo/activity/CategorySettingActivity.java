@@ -60,7 +60,7 @@ public class CategorySettingActivity extends AppCompatActivity implements  Loade
 
         mCategoryDBHelper = CategoryDBHelper.getInstance(CategorySettingActivity.this);
 
-        myDataset = getResources().getStringArray(R.array.category_default);
+        //myDataset = getResources().getStringArray(R.array.category_default);
 
         emprtView = (ProgressBar) findViewById(R.id.list_empty);
         mRecyclerView = (RecyclerView) findViewById(R.id.my_recycler_view);

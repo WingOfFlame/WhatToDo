@@ -25,9 +25,7 @@ public class TaskDbHelper extends SQLiteOpenHelper {
     private static class TaskEntry implements BaseColumns {
         static final String TABLE_NAME = "task";
         static final String COLUMN_NAME_NAME = "name";
-        static final String COLUMN_NAME_CATEGORY = "category";
         static final String COLUMN_NAME_PRIORITY = "priority";
-        static final String COLUMN_NAME_TRACKABLE = "trackable";
         static final String COLUMN_NAME_COUNTDOWN = "countDown";
         static final String COLUMN_NAME_COUNTUP = "countUp";
         static final String COLUMN_NAME_DEADLINE= "deadline";
@@ -37,15 +35,13 @@ public class TaskDbHelper extends SQLiteOpenHelper {
     private static final String TAG = "TaskDbHelper";
     private static TaskDbHelper sInstance;
     // If you change the database schema, you must increment the database version.
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static final String DATABASE_NAME = "Task.db";
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TaskEntry.TABLE_NAME + " (" +
                     TaskEntry._ID + " INTEGER PRIMARY KEY," +
                     TaskEntry.COLUMN_NAME_NAME + " TEXT," +
-                    TaskEntry.COLUMN_NAME_CATEGORY + " TEXT," +
                     TaskEntry.COLUMN_NAME_PRIORITY + " INTEGER," +
-                    TaskEntry.COLUMN_NAME_TRACKABLE + " INTEGER," +
                     TaskEntry.COLUMN_NAME_COUNTDOWN + " INTEGER," +
                     TaskEntry.COLUMN_NAME_COUNTUP + " INTEGER," +
                     TaskEntry.COLUMN_NAME_DEADLINE + " TEXT)";
@@ -92,9 +88,7 @@ public class TaskDbHelper extends SQLiteOpenHelper {
         SQLiteDatabase mDb = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put(TaskEntry.COLUMN_NAME_NAME, newTask.name);
-        values.put(TaskEntry.COLUMN_NAME_CATEGORY, newTask.category);
         values.put(TaskEntry.COLUMN_NAME_PRIORITY, newTask.priority);
-        values.put(TaskEntry.COLUMN_NAME_TRACKABLE, newTask.trackable ? 1 : 0);
         values.put(TaskEntry.COLUMN_NAME_COUNTDOWN, newTask.countDown);
         values.put(TaskEntry.COLUMN_NAME_COUNTUP, newTask.countUp);
         values.put(TaskEntry.COLUMN_NAME_DEADLINE, newTask.getDeadline());

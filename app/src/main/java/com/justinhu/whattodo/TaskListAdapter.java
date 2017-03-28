@@ -108,8 +108,8 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
         }
 
         if(task != null) {
-            Category c = Category.lookupTable.get(task.category);
-            holder.populateView(c, task);
+            //Category c = Category.lookupTable.get(task.category);
+            //holder.populateView(c, task);
         }
 
         return convertView;
@@ -135,16 +135,16 @@ public class TaskListAdapter extends ArrayAdapter<Task> {
             if (filter == LIST_FILTER_ONTIME && t.getDeadlineOrigin().compareTo(currentTime) < 0) {
                 continue;
             }
-            Category c = Category.lookupTable.get(t.category);
-            group.get(length - c.getPriority()).add(t);
+            //Category c = Category.lookupTable.get(t.category);
+            //group.get(length - c.getPriority()).add(t);
         }
         List<Task> flatten = new ArrayList<>();
 
         for (List<Task> list : group){
             if(!list.isEmpty()){
                 Collections.sort(list);
-                String categoryName = list.get(0).category;
-                flatten.add(Task.SeparatorInstance(categoryName));
+                //String categoryName = list.get(0).category;
+                //flatten.add(Task.SeparatorInstance(categoryName));
                 flatten.addAll(list);
             }
         }

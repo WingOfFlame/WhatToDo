@@ -1,9 +1,6 @@
 package com.justinhu.whattodo;
 
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -22,22 +19,17 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.justinhu.whattodo.activity.SettingsActivity;
-import com.justinhu.whattodo.db.CategoryDBHelper;
 import com.justinhu.whattodo.db.TaskDbHelper;
 import com.justinhu.whattodo.fragment.AllTaskFragment;
 import com.justinhu.whattodo.fragment.TaskDialog;
 import com.justinhu.whattodo.fragment.TodayTaskFragment;
-import com.justinhu.whattodo.model.Category;
 import com.justinhu.whattodo.model.Task;
-
-import java.util.List;
 
 public class Main2Activity extends AppCompatActivity implements View.OnClickListener, TaskDialog.NewTaskDialogListener, AllTaskFragment.TaskListOwner {
     private static final String TAG = "MainActivity";
 
     private TaskDbHelper mTaskDbHelper;
-    private CategoryDBHelper mCategoryDBHelper;
+    //private CategoryDBHelper mCategoryDBHelper;
 
     private FragmentManager fragmentManager;
     private SectionsPagerAdapter mSectionsPagerAdapter;
@@ -53,7 +45,8 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
         Log.i(TAG, "onCreate");
         super.onCreate(savedInstanceState);
 
-        initConfig();
+        mTaskDbHelper = TaskDbHelper.getInstance(Main2Activity.this);
+
 
         setContentView(R.layout.activity_main2);
 
@@ -86,18 +79,6 @@ public class Main2Activity extends AppCompatActivity implements View.OnClickList
 
     }
 
-    void initConfig() {
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-        PreferenceManager.setDefaultValues(this, R.xml.pref_general, false);
-        Task.useCategory = sharedPref.getBoolean(SettingsActivity.KEY_PREF_CATEGORY, false);
-
-        mTaskDbHelper = TaskDbHelper.getInstance(Main2Activity.this);
-        mCategoryDBHelper = CategoryDBHelper.getInstance(Main2Activity.this);
-
-        Cursor cursor = mCategoryDBHelper.getCategory();
-        List<Category> data = mCategoryDBHelper.getCategoryList(this, cursor);
-        Category.updateLookupTable(data);
-    }
 
 
     @Override

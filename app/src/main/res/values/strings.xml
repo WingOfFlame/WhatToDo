@@ -2,29 +2,13 @@
     <string name="app_name">WhatToDo</string>
     <string name="action_settings">Settings</string>
 
-    <string name="string_category_default">Default</string>
-    <string name="string_category_work">Work</string>
-    <string name="string_category_study">Study</string>
-    <string name="string_category_workout">Workout</string>
-    <string name="string_category_personal">Personal</string>
-    <string name="string_category_relax">Relax</string>
-    <string-array name="category_default">
-        <item>Default</item>
-        <item>Work</item>
-        <item>School</item>
-        <item>Workout</item>
-        <item>Personal</item>
-        <item>Relax</item>
-    </string-array>
-
-    <string name="toolbar_title">All Tasks</string>
     <string-array name="toolbar_filter">
         <item>All Tasks</item>
         <item>On Time</item>
         <item>Overdue</item>
     </string-array>
-    <string name="select_task">Select Tasks</string>
 
+    <string name="select_task">Select Tasks</string>
     <string name="btn_get_task">What to do?</string>
 
     <!--FAB-->
@@ -52,11 +36,12 @@
     <string name="label_add_task_hint">View your to-do list here after \nadding tasks with the &#x2795; button</string>
 
     <!--Task Dialog-->
-
     <string name="edit_task_name">Task Name</string>
     <string name="label_task_priority">Priority</string>
     <string name="label_deadline">Deadline</string>
-    <string name="label_task_trackable">Trackable</string>
+    <string name="label_repeat">Repetition</string>
+    <string name="label_workload">Workload</string>
+    <string name="label_note">Note</string>
     <string name="btn_start_task">Start</string>
     <string name="btn_decline_task">Later</string>
     <string name="label_take_task_hint">Start working on this task?</string>
@@ -73,5 +58,11 @@
     <string name="section_format">Hello World from section: %1$d</string>
 
 
-
+    <string name="string_category_default">Default</string>
+    <string name="string_category_work">Work</string>
+    <string name="string_category_study">Study</string>
+    <string name="string_category_workout">Workout</string>
+    <string name="string_category_personal">Personal</string>
+    <string name="string_category_relax">Relax</string>
+    <string name="hint_note_input">Add note</string>
 </resources>

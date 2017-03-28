@@ -20,7 +20,7 @@ public class Task implements Comparable, Serializable {
 
     private int id;
     public String name;
-    public String category;
+    //public String category;
     public int priority;
     public boolean trackable;
     public int countDown;
@@ -30,14 +30,12 @@ public class Task implements Comparable, Serializable {
     private boolean isSeperator;
 
 
-    public Task(String name, String category, int priority, boolean trackable, int countDown, int countUp, String deadline) {
+    public Task(String name, int priority, int countDown, int countUp, String deadline) {
         if (name.equals("")) {
             name = DEFAULT_TITLE;
         }
         this.name = name;
-        this.category = category;
         this.priority = priority;
-        this.trackable = trackable;
         this.countDown = countDown;
         this.countUp = countUp;
         this.deadline = deadline;
@@ -52,7 +50,7 @@ public class Task implements Comparable, Serializable {
     }
 
     private Task(String category) {
-        this.category = category;
+        //this.category = category;
         this.isSeperator = true;
     }
 
@@ -89,9 +87,6 @@ public class Task implements Comparable, Serializable {
         int dateOrder = this.deadlineOrigin.compareTo(otherTask.deadlineOrigin);
         if (dateOrder != 0) {
             return dateOrder;
-        }
-        if(useCategory){
-            return otherTask.priority * Category.lookupTable.get(otherTask.category).getPriority() - this.priority * Category.lookupTable.get(this.category).getPriority();
         }
 
         return otherTask.priority  - this.priority;

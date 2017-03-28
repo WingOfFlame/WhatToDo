@@ -161,7 +161,7 @@ public class AllTaskFragment extends Fragment implements LoaderManager.LoaderCal
             int countDown = cursor.getInt(5);
             int countUp = cursor.getInt(6);
             String deadline = cursor.getString(7);
-            Task task = new Task(name,
+            /*Task task = new Task(name,
                     category,
                     priority,
                     trackable,
@@ -169,7 +169,7 @@ public class AllTaskFragment extends Fragment implements LoaderManager.LoaderCal
                     countUp,
                     deadline);
             task.setId(cursor.getInt(0));
-            copy.add(task);
+            copy.add(task);*/
         }
 
         mDataCopy = copy;

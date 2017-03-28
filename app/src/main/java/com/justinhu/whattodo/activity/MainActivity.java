@@ -320,9 +320,9 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
             Log.e(TAG, "Empty currentTask, but updateBottomSheet called");
         }
         taskName.setText(currentTask.name);
-        Category c = Category.lookupTable.get(currentTask.category);
-        taskCategory.setImageResource(c.getIconId());
-        taskCategory.setColorFilter(Color.parseColor(c.color));
+        //Category c = Category.lookupTable.get(currentTask.category);
+        //taskCategory.setImageResource(c.getIconId());
+        //taskCategory.setColorFilter(Color.parseColor(c.color));
         taskPriority.setRating(currentTask.priority);
         String countLabel;
         if (currentTask.trackable) {
@@ -485,15 +485,15 @@ public class MainActivity extends AppCompatActivity implements TaskDialog.NewTas
             int countDown = cursor.getInt(5);
             int countUp = cursor.getInt(6);
             String deadline = cursor.getString(7);
-            Task task = new Task(name,
+            /*Task task = new Task(name,
                     category,
                     priority,
                     trackable,
                     countDown,
                     countUp,
-                    deadline);
-            task.setId(cursor.getInt(0));
-            copy.add(task);
+                    deadline);*/
+            //task.setId(cursor.getInt(0));
+            //copy.add(task);
         }
 
         mDataCopy = copy;
